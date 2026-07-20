@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Professor — Ocorrências Escolares</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --azul:#2157d5;--azul2:#1746b3;--bg:#f3f6fb;--card:#fff;--texto:#1d2a3a;
+  --muted:#687587;--borda:#dce4ef;--verde:#16845b;--vermelho:#c33e4d;--amarelo:#9a6500;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--texto)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.topo{background:#fff;border-bottom:1px solid var(--borda);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+.marca{display:flex;align-items:center;gap:12px}
+.logo{width:42px;height:42px;border-radius:12px;background:var(--azul);color:white;display:grid;place-items:center;font-weight:900}
+.marca h1{font-size:18px;margin:0}.marca p{font-size:12px;color:var(--muted);margin:3px 0 0}
+.usuario{display:flex;align-items:center;gap:12px}.usuario strong{display:block}.usuario small{color:var(--muted)}
+.container{max-width:1240px;margin:0 auto;padding:24px}
+.grid-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.card{background:#fff;border:1px solid var(--borda);border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(32,52,78,.05)}
+.card h2,.card h3{margin-top:0}.numero{font-size:30px;font-weight:900;margin-top:6px}
+.rotulo{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.duas-colunas{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:800}
+.btn-primario{background:var(--azul);color:#fff}.btn-primario:hover{background:var(--azul2)}
+.btn-secundario{background:#eaf0fb;color:#23406b}.btn-perigo{background:#fff0f1;color:#a62f3d}
+.acoes{display:flex;gap:8px;flex-wrap:wrap}
+.cabecalho-secao{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.cabecalho-secao h2{margin:0;font-size:19px}
+.tabela-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #e8edf4;font-size:13px;vertical-align:top}
+th{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.04em}
+.badge{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}
+.pendente{background:#fff4d8;color:#8b5c00}.finalizada{background:#e7f7ef;color:#126842}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.campo{display:flex;flex-direction:column;gap:6px}.campo.full{grid-column:1/-1}
+label{font-size:12px;font-weight:800;color:#425166}
+input,select,textarea{width:100%;border:1px solid #cfd9e6;border-radius:10px;padding:11px;background:#fff;color:#182536}
+textarea{min-height:105px;resize:vertical}
+.vazio{padding:28px;text-align:center;color:var(--muted);border:1px dashed #cbd6e4;border-radius:12px;background:#fafcff}
+.login-page{min-height:100vh;display:grid;place-items:center;padding:20px}
+.login-card{width:min(430px,100%);background:#fff;border:1px solid var(--borda);border-radius:18px;padding:28px;box-shadow:0 20px 60px rgba(32,52,78,.12)}
+.login-card h1{margin:12px 0 6px}.login-card p{color:var(--muted);margin:0 0 20px}
+.erro{color:#a52f3c;background:#fff1f2;border:1px solid #f2c9ce;padding:10px;border-radius:9px;margin-top:12px;font-size:13px}
+.toast{position:fixed;right:20px;bottom:20px;background:#1d2a3a;color:white;padding:14px 17px;border-radius:12px;box-shadow:0 15px 35px rgba(0,0,0,.2);z-index:100}
+.modal{position:fixed;inset:0;background:rgba(12,20,32,.5);display:grid;place-items:center;padding:18px;z-index:50}
+.modal-box{width:min(620px,100%);max-height:90vh;overflow:auto;background:white;border-radius:18px;padding:22px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.modal-head h2{margin:0}
+.detalhe{background:#f7f9fc;border:1px solid #e1e7f0;border-radius:10px;padding:12px;margin-bottom:10px}
+.detalhe strong{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
+.link-painel{color:var(--azul);font-weight:800;text-decoration:none}
+.busca-linha{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.busca-linha input{min-width:220px;flex:1}
+.busca-status{font-size:12px;color:var(--muted);margin-bottom:10px}
+
+@media(max-width:900px){.grid-cards{grid-template-columns:1fr 1fr}.duas-colunas{grid-template-columns:1fr}}
+@media(max-width:620px){.grid-cards{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.topo{padding:12px}.container{padding:14px}.usuario small{display:none}}
+</style>
+</head>
+<body>
+
+<section id="loginArea" class="login-page">
+  <div class="login-card">
+    <div class="logo">OE</div>
+    <h1>Painel do Professor</h1>
+    <p>Entre com o usuário professor cadastrado no Firebase.</p>
+    <form id="formLogin" class="form-grid">
+      <div class="campo full"><label>E-mail</label><input id="email" type="email" required></div>
+      <div class="campo full"><label>Senha</label><input id="senha" type="password" required></div>
+      <button class="btn btn-primario campo full" type="submit">Entrar</button>
+    </form>
+    <div id="erroLogin" class="erro hidden"></div>
+    <p style="margin-top:18px;font-size:13px">Direção: <a class="link-painel" href="index.html">abrir painel do diretor</a></p>
+  </div>
+</section>
+
+<div id="app" class="hidden">
+  <header class="topo">
+    <div class="marca"><div class="logo">OE</div><div><h1>Painel do Professor</h1><p>Registro e acompanhamento de ocorrências</p></div></div>
+    <div class="usuario"><div><strong id="nomeUsuario">Professor</strong><small id="emailUsuario"></small></div><button id="sair" class="btn btn-secundario">Sair</button></div>
+  </header>
+
+  <main class="container">
+    <section class="grid-cards">
+      <div class="card"><span class="rotulo">Minhas ocorrências</span><div id="qtdTotal" class="numero">0</div></div>
+      <div class="card"><span class="rotulo">Pendentes</span><div id="qtdPendentes" class="numero">0</div></div>
+      <div class="card"><span class="rotulo">Finalizadas</span><div id="qtdFinalizadas" class="numero">0</div></div>
+      <div class="card"><span class="rotulo">Estudantes disponíveis</span><div id="qtdEstudantes" class="numero">0</div></div>
+    </section>
+
+    <section class="card">
+      <div class="cabecalho-secao"><h2>Registrar nova ocorrência</h2><span class="badge pendente">Será enviada imediatamente</span></div>
+      <div class="busca-linha">
+        <input id="buscaEstudante" placeholder="Digite o nome, turma ou RA do estudante">
+        <button id="localizarEstudante" type="button" class="btn btn-secundario">Localizar estudante</button>
+        <button id="limparBuscaEstudante" type="button" class="btn btn-secundario hidden">Limpar</button>
+      </div>
+      <div id="statusBuscaEstudante" class="busca-status"></div>
+      <form id="formOcorrencia" class="form-grid">
+        <div class="campo"><label>Aluno</label><select id="aluno" required><option value="">Selecione...</option></select></div>
+        <div class="campo"><label>Tipo da ocorrência</label>
+          <select id="tipo" required>
+            <option value="">Selecione...</option><option>Indisciplina</option><option>Agressão verbal</option>
+            <option>Agressão física</option><option>Bullying</option><option>Uso indevido de celular</option>
+            <option>Falta recorrente</option><option>Desrespeito</option><option>Outro</option>
+          </select>
+        </div>
+        <div class="campo full"><label>Descrição do ocorrido</label><textarea id="descricao" required placeholder="Relate objetivamente o que aconteceu."></textarea></div>
+        <div class="campo full"><label>Providência inicial tomada pelo professor</label><textarea id="providenciaProfessor" required placeholder="Ex.: orientação ao aluno, mudança de lugar, conversa individual..."></textarea></div>
+        <button class="btn btn-primario campo full" type="submit">Enviar ocorrência ao diretor</button>
+      </form>
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <div class="cabecalho-secao"><h2>Minhas ocorrências</h2></div>
+      <div class="busca-linha">
+        <input id="buscaOcorrencia" placeholder="Digite o nome do estudante">
+        <button id="localizarOcorrencia" type="button" class="btn btn-secundario">Localizar ocorrência</button>
+        <button id="limparBuscaOcorrencia" type="button" class="btn btn-secundario hidden">Limpar</button>
+      </div>
+      <div id="statusBuscaOcorrencia" class="busca-status"></div>
+      <div id="listaOcorrencias"></div>
+    </section>
+  </main>
+</div>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-head"><h2>Detalhes da ocorrência</h2><button id="fecharModal" class="btn btn-secundario">Fechar</button></div>
+    <div id="detalhesOcorrencia"></div>
+  </div>
+</div>
+<div id="toast" class="toast hidden"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFirestore, doc, getDoc, collection, addDoc, onSnapshot, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCsfa0QzC0Nj4Zq9vG0BOd1rWcpYyWVBnU",
+  authDomain: "sistema-ocorrencia.firebaseapp.com",
+  projectId: "sistema-ocorrencia",
+  storageBucket: "sistema-ocorrencia.firebasestorage.app",
+  messagingSenderId: "728625275484",
+  appId: "1:728625275484:web:572e27749d6e53d308bc99"
+};
+
+const appFirebase=initializeApp(firebaseConfig, "professorApp");
+const auth=getAuth(appFirebase);
+setPersistence(auth, browserLocalPersistence).catch(erro => console.warn("Persistência da sessão não disponível:", erro));
+const db=getFirestore(appFirebase);
+const $=s=>document.querySelector(s);
+
+window.addEventListener("error", evento => {
+  console.error("Erro no Painel do Professor:", evento.error || evento.message);
+  const erro = document.querySelector("#erroLogin");
+  const login = document.querySelector("#loginArea");
+  const app = document.querySelector("#app");
+  if(app) app.classList.add("hidden");
+  if(login) login.classList.remove("hidden");
+  if(erro){
+    erro.textContent = "Erro ao iniciar o painel: " + (evento.error?.message || evento.message || "erro desconhecido");
+    erro.classList.remove("hidden");
+  }
+});
+
+window.addEventListener("unhandledrejection", evento => {
+  console.error("Falha no Painel do Professor:", evento.reason);
+  const erro = document.querySelector("#erroLogin");
+  const login = document.querySelector("#loginArea");
+  const app = document.querySelector("#app");
+  if(app) app.classList.add("hidden");
+  if(login) login.classList.remove("hidden");
+  if(erro){
+    erro.textContent = "Erro ao conectar ao Firebase: " + (evento.reason?.message || evento.reason?.code || "falha desconhecida");
+    erro.classList.remove("hidden");
+  }
+});
+
+let usuarioAtual=null, estudantes=[], ocorrencias=[];
+let filtroEstudante="";
+let filtroOcorrencia="";
+
+function normalizarBusca(valor=""){
+ return String(valor).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+}
+function esc(v=""){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+function dataBR(v){if(!v)return"-";const d=v.toDate?v.toDate():new Date(v);return d.toLocaleString("pt-BR");}
+function toast(msg){$("#toast").textContent=msg;$("#toast").classList.remove("hidden");setTimeout(()=>$("#toast").classList.add("hidden"),3000);}
+async function carregarPerfil(uid){const s=await getDoc(doc(db,"usuariosSistema",uid));return s.exists()?s.data():null;}
+
+$("#formLogin").addEventListener("submit",async e=>{
+ e.preventDefault();$("#erroLogin").classList.add("hidden");
+ try{await signInWithEmailAndPassword(auth,$("#email").value.trim(),$("#senha").value);}
+ catch(err){
+   console.error("Erro de login:",err);
+   const mensagens={
+     "auth/invalid-credential":"E-mail ou senha incorretos.",
+     "auth/user-disabled":"Este usuário foi desativado.",
+     "auth/too-many-requests":"Muitas tentativas. Aguarde um pouco e tente novamente.",
+     "auth/network-request-failed":"Falha de internet ao acessar o Firebase."
+   };
+   $("#erroLogin").textContent=mensagens[err.code]||("Não foi possível entrar: "+(err.code||err.message));
+   $("#erroLogin").classList.remove("hidden");
+ }
+});
+$("#sair").onclick=()=>signOut(auth);
+$("#fecharModal").onclick=()=>$("#modal").classList.add("hidden");
+
+onAuthStateChanged(auth,async user=>{
+ try{
+   if(!user){
+     $("#loginArea").classList.remove("hidden");
+     $("#app").classList.add("hidden");
+     return;
+   }
+
+   const perfil=await carregarPerfil(user.uid);
+
+   if(!perfil){
+     await signOut(auth);
+     $("#erroLogin").textContent="Não existe perfil em usuariosSistema para este UID.";
+     $("#erroLogin").classList.remove("hidden");
+     return;
+   }
+
+   if(perfil.ativo!==true){
+     await signOut(auth);
+     $("#erroLogin").textContent="Este usuário está inativo no Firestore.";
+     $("#erroLogin").classList.remove("hidden");
+     return;
+   }
+
+   if(perfil.perfil!=="professor"){
+     await signOut(auth);
+     $("#erroLogin").textContent='O campo perfil deve ser exatamente "professor".';
+     $("#erroLogin").classList.remove("hidden");
+     return;
+   }
+
+   usuarioAtual={uid:user.uid,email:user.email,...perfil};
+   $("#nomeUsuario").textContent=perfil.nome||"Professor";
+   $("#emailUsuario").textContent=user.email;
+   $("#erroLogin").classList.add("hidden");
+   $("#loginArea").classList.add("hidden");
+   $("#app").classList.remove("hidden");
+   iniciarTempoReal();
+ }catch(erro){
+   console.error("Erro ao abrir o painel do professor:",erro);
+   $("#app").classList.add("hidden");
+   $("#loginArea").classList.remove("hidden");
+   $("#erroLogin").textContent="Não foi possível abrir o painel: "+(erro.code||erro.message||"erro desconhecido");
+   $("#erroLogin").classList.remove("hidden");
+ }
+});
+
+function iniciarTempoReal(){
+ onSnapshot(query(collection(db,"estudantes")),snap=>{
+   estudantes=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.nome||"").localeCompare(b.nome||""));
+   atualizarListaEstudantes();
+   render();
+ },erro=>{
+   console.error("Erro ao carregar estudantes:",erro);
+   toast("Erro ao carregar estudantes: "+(erro.code||erro.message));
+ });
+ onSnapshot(query(collection(db,"ocorrencias"),where("professorId","==",usuarioAtual.uid)),snap=>{
+   ocorrencias=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
+     const da=a.criadaEm?.toMillis?.()||0,dbb=b.criadaEm?.toMillis?.()||0;return dbb-da;
+   });
+   render();
+ },erro=>{
+   console.error("Erro ao carregar ocorrências:",erro);
+   toast("Erro ao carregar ocorrências: "+(erro.code||erro.message));
+ });
+}
+
+$("#formOcorrencia").addEventListener("submit",async e=>{
+ e.preventDefault();
+ const aluno=estudantes.find(a=>a.id===$("#aluno").value);
+ if(!aluno)return;
+ await addDoc(collection(db,"ocorrencias"),{
+   alunoId:aluno.id,alunoNome:aluno.nome,alunoTurma:aluno.turma||"",
+   professorId:usuarioAtual.uid,professorNome:usuarioAtual.nome||usuarioAtual.email,
+   professor:usuarioAtual.nome||usuarioAtual.email,
+   tipo:$("#tipo").value,descricao:$("#descricao").value.trim(),
+   providenciaProfessor:$("#providenciaProfessor").value.trim(),
+   providencia:$("#providenciaProfessor").value.trim(),
+   status:"Pendente",parecerGestor:"",respostaDiretor:"",providenciaDirecao:"",
+   criadaEm:serverTimestamp()
+ });
+ e.target.reset();toast("Ocorrência enviada imediatamente ao diretor.");
+});
+
+
+function atualizarListaEstudantes(){
+ const termo=normalizarBusca(filtroEstudante);
+ const lista=termo
+   ? estudantes.filter(a=>
+       normalizarBusca(a.nome).includes(termo) ||
+       normalizarBusca(a.turma).includes(termo) ||
+       normalizarBusca(`${a.ra||""}-${a.digito||""}`).includes(termo)
+     )
+   : estudantes;
+
+ $("#aluno").innerHTML='<option value="">Selecione...</option>'+lista.map(a=>`<option value="${a.id}">${esc(a.nome)} — ${esc(a.turma||"")}</option>`).join("");
+ $("#statusBuscaEstudante").textContent=termo ? `${lista.length} estudante(s) localizado(s).` : "";
+}
+
+function executarBuscaEstudante(){
+ filtroEstudante=$("#buscaEstudante").value;
+ $("#limparBuscaEstudante").classList.toggle("hidden",!filtroEstudante.trim());
+ atualizarListaEstudantes();
+}
+$("#localizarEstudante").addEventListener("click",executarBuscaEstudante);
+$("#buscaEstudante").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();executarBuscaEstudante();}});
+$("#limparBuscaEstudante").addEventListener("click",()=>{
+ $("#buscaEstudante").value="";
+ filtroEstudante="";
+ $("#limparBuscaEstudante").classList.add("hidden");
+ atualizarListaEstudantes();
+});
+
+function executarBuscaOcorrencia(){
+ filtroOcorrencia=$("#buscaOcorrencia").value;
+ $("#limparBuscaOcorrencia").classList.toggle("hidden",!filtroOcorrencia.trim());
+ render();
+}
+$("#localizarOcorrencia").addEventListener("click",executarBuscaOcorrencia);
+$("#buscaOcorrencia").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();executarBuscaOcorrencia();}});
+$("#limparBuscaOcorrencia").addEventListener("click",()=>{
+ $("#buscaOcorrencia").value="";
+ filtroOcorrencia="";
+ $("#limparBuscaOcorrencia").classList.add("hidden");
+ render();
+});
+
+function render(){
+ const termo=normalizarBusca(filtroOcorrencia);
+ const ocorrenciasFiltradas=termo
+   ? ocorrencias.filter(o=>normalizarBusca(o.alunoNome).includes(termo))
+   : ocorrencias;
+ const pend=ocorrenciasFiltradas.filter(o=>o.status!=="Finalizada"),fin=ocorrenciasFiltradas.filter(o=>o.status==="Finalizada");
+ $("#qtdTotal").textContent=ocorrencias.length;$("#qtdPendentes").textContent=pend.length;
+ $("#qtdFinalizadas").textContent=fin.length;$("#qtdEstudantes").textContent=estudantes.length;
+ $("#listaOcorrencias").innerHTML=ocorrenciasFiltradas.length?`<div class="tabela-wrap"><table><thead><tr><th>Aluno</th><th>Tipo</th><th>Enviada</th><th>Status</th><th></th></tr></thead><tbody>${ocorrenciasFiltradas.map(o=>`<tr>
+ <td><strong>${esc(o.alunoNome)}</strong><br><small>${esc(o.alunoTurma||"")}</small></td>
+ <td>${esc(o.tipo||"")}</td><td>${dataBR(o.criadaEm)}</td>
+ <td><span class="badge ${o.status==="Finalizada"?"finalizada":"pendente"}">${esc(o.status||"Pendente")}</span></td>
+ <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver detalhes</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button></div></td></tr>`).join("")}</tbody></table></div>`:'<div class="vazio">Você ainda não registrou ocorrências.</div>';
+ $("#statusBuscaOcorrencia").textContent=termo ? `${ocorrenciasFiltradas.length} ocorrência(s) localizada(s) para o estudante.` : "";
+ document.querySelectorAll("[data-ver]").forEach(b=>b.onclick=()=>abrir(b.dataset.ver));
+ document.querySelectorAll("[data-imprimir]").forEach(b=>b.onclick=()=>imprimirOcorrencia(b.dataset.imprimir));
+}
+
+function imprimirOcorrencia(id){
+ const o=ocorrencias.find(x=>x.id===id);
+ if(!o)return;
+
+ const finalizada=o.status==="Finalizada";
+ const janela=window.open("","_blank","width=900,height=700");
+ janela.document.write(`
+   <!DOCTYPE html>
+   <html lang="pt-BR">
+   <head>
+     <meta charset="UTF-8">
+     <title>Ocorrência Escolar</title>
+     <style>
+       body{font-family:Arial,sans-serif;color:#111;padding:30px;line-height:1.45}
+       h1{text-align:center;font-size:22px;margin-bottom:5px}
+       .sub{text-align:center;color:#555;margin-bottom:28px}
+       .linha{border-bottom:1px solid #bbb;padding:9px 0}
+       .linha strong{display:inline-block;min-width:190px}
+       .bloco{border:1px solid #bbb;border-radius:8px;padding:14px;margin-top:16px}
+       .bloco strong{display:block;margin-bottom:8px}
+       .status{font-weight:bold}
+       .assinaturas{display:flex;gap:50px;margin-top:70px}
+       .assinatura{flex:1;text-align:center;border-top:1px solid #222;padding-top:7px}
+       @media print{button{display:none}}
+     </style>
+   </head>
+   <body>
+     <h1>REGISTRO DE OCORRÊNCIA ESCOLAR</h1>
+     <div class="sub">Sistema de Ocorrências Escolares</div>
+     <div class="linha"><strong>Aluno:</strong>${esc(o.alunoNome)}</div>
+     <div class="linha"><strong>Turma:</strong>${esc(o.alunoTurma||"")}</div>
+     <div class="linha"><strong>Professor:</strong>${esc(o.professorNome||o.professor||"")}</div>
+     <div class="linha"><strong>Tipo:</strong>${esc(o.tipo||"")}</div>
+     <div class="linha"><strong>Registrada em:</strong>${dataBR(o.criadaEm)}</div>
+     <div class="linha"><strong>Status:</strong><span class="status">${esc(o.status||"Pendente")}</span></div>
+     <div class="bloco"><strong>Descrição do ocorrido</strong>${esc(o.descricao||"")}</div>
+     <div class="bloco"><strong>Providência inicial do professor</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
+     ${finalizada?`
+       <div class="bloco"><strong>Providência da direção</strong>${esc(o.providenciaDirecao||o.parecerGestor||"")}</div>
+       <div class="linha"><strong>Finalizada em:</strong>${dataBR(o.finalizadaEm)}</div>
+     `:""}
+     <div class="assinaturas">
+       <div class="assinatura">Professor responsável</div>
+       <div class="assinatura">Direção escolar</div>
+     </div>
+     <script>window.onload=()=>window.print();<\/script>
+   </body>
+   </html>
+ `);
+ janela.document.close();
+}
+
+function abrir(id){
+ const o=ocorrencias.find(x=>x.id===id);
+ $("#detalhesOcorrencia").innerHTML=`
+ <div class="detalhe"><strong>Aluno</strong>${esc(o.alunoNome)} — ${esc(o.alunoTurma||"")}</div>
+ <div class="detalhe"><strong>Tipo</strong>${esc(o.tipo||"")}</div>
+ <div class="detalhe"><strong>Descrição</strong>${esc(o.descricao||"")}</div>
+ <div class="detalhe"><strong>Sua providência inicial</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
+ <div class="detalhe"><strong>Status</strong>${esc(o.status||"Pendente")}</div>
+ ${o.status==="Finalizada"?`<div class="detalhe"><strong>Providência da direção</strong>${esc(o.providenciaDirecao||o.parecerGestor||"")}</div><div class="detalhe"><strong>Finalizada em</strong>${dataBR(o.finalizadaEm)}</div>`:'<div class="detalhe"><strong>Acompanhamento</strong>A ocorrência foi enviada e aguarda atendimento da direção.</div>'}
+ `;
+ $("#modal").classList.remove("hidden");
+}
+</script>
+</body>
+</html>

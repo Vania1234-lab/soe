@@ -1,0 +1,66 @@
+COMO INSTALAR ESTA VERSÃO
+
+1. Firebase Console > Firestore Database > Regras.
+2. Apague as regras antigas.
+3. Cole todo o conteúdo de firestore.rules.
+4. Clique em Publicar.
+5. Substitua os arquivos antigos por:
+   - index.html
+   - prof.html
+6. Feche todas as abas antigas.
+7. Abra novamente e pressione Ctrl + F5.
+
+CONFIRA O FIRESTORE
+
+Coleção: usuariosSistema
+
+Documento do diretor:
+- ID do documento = UID exato do Authentication
+- nome = nome desejado
+- perfil = gestor
+- ativo = true (booleano)
+
+Documento do professor:
+- ID do documento = UID exato do Authentication
+- nome = nome desejado
+- perfil = professor
+- ativo = true (booleano)
+
+A página agora mostra mensagens específicas quando:
+- o documento do perfil não existe;
+- ativo não é booleano true;
+- perfil está escrito errado;
+- as regras bloqueiam a leitura;
+- há erro de conexão com o Firebase.
+
+
+IMPORTAÇÃO DE ESTUDANTES POR EXCEL
+
+No Painel do Diretor:
+1. Clique em "Selecionar Excel ou CSV".
+2. Escolha um arquivo .xlsx, .xls ou .csv.
+3. Confira a prévia.
+4. Clique em "Cadastrar lista".
+
+Colunas:
+- Nome (obrigatória)
+- Turma (obrigatória)
+- RA (obrigatória)
+- Dígito
+- Responsável
+- Contato
+
+O botão "Baixar modelo CSV" gera um arquivo pronto para preenchimento.
+
+
+NOVAS FUNÇÕES
+
+Painel do Diretor:
+- botão Localizar estudante por nome, turma ou RA;
+- botão Localizar ocorrência pelo nome do estudante;
+- aviso sonoro para nova ocorrência pendente;
+- o som precisa ser ativado uma vez pelo botão "Ativar som", por exigência dos navegadores.
+
+Painel do Professor:
+- botão Localizar estudante por nome, turma ou RA;
+- botão Localizar ocorrência pelo nome do estudante.

@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function autenticado() {
+      return request.auth != null;
+    }
+
+    function caminhoPerfil() {
+      return /databases/$(database)/documents/usuariosSistema/$(request.auth.uid);
+    }
+
+    function temPerfil() {
+      return autenticado() && exists(caminhoPerfil());
+    }
+
+    function perfilAtual() {
+      return get(caminhoPerfil()).data;
+    }
+
+    function ativo() {
+      return temPerfil() && perfilAtual().ativo == true;
+    }
+
+    function gestor() {
+      return ativo() && perfilAtual().perfil == "gestor";
+    }
+
+    function professor() {
+      return ativo() && perfilAtual().perfil == "professor";
+    }
+
+    match /usuariosSistema/{uid} {
+      allow read: if autenticado() && request.auth.uid == uid;
+      allow create, update, delete: if gestor();
+    }
+
+    match /estudantes/{estudanteId} {
+      allow read: if ativo();
+      allow create, update, delete: if gestor();
+    }
+
+    match /ocorrencias/{ocorrenciaId} {
+      allow read: if gestor()
+        || (professor() && resource.data.professorId == request.auth.uid);
+
+      allow create: if professor()
+        && request.resource.data.professorId == request.auth.uid
+        && request.resource.data.status == "Pendente";
+
+      allow update: if gestor();
+
+      allow delete: if gestor();
+    }
+  }
+}

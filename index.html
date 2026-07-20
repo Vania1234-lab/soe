@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Diretor — Ocorrências Escolares</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --azul:#2157d5;--azul2:#1746b3;--bg:#f3f6fb;--card:#fff;--texto:#1d2a3a;
+  --muted:#687587;--borda:#dce4ef;--verde:#16845b;--vermelho:#c33e4d;--amarelo:#9a6500;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--texto)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.topo{background:#fff;border-bottom:1px solid var(--borda);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+.marca{display:flex;align-items:center;gap:12px}
+.logo{width:42px;height:42px;border-radius:12px;background:var(--azul);color:white;display:grid;place-items:center;font-weight:900}
+.marca h1{font-size:18px;margin:0}.marca p{font-size:12px;color:var(--muted);margin:3px 0 0}
+.usuario{display:flex;align-items:center;gap:12px}.usuario strong{display:block}.usuario small{color:var(--muted)}
+.container{max-width:1240px;margin:0 auto;padding:24px}
+.grid-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.card{background:#fff;border:1px solid var(--borda);border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(32,52,78,.05)}
+.card h2,.card h3{margin-top:0}.numero{font-size:30px;font-weight:900;margin-top:6px}
+.rotulo{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.duas-colunas{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:800}
+.btn-primario{background:var(--azul);color:#fff}.btn-primario:hover{background:var(--azul2)}
+.btn-secundario{background:#eaf0fb;color:#23406b}.btn-perigo{background:#fff0f1;color:#a62f3d}
+.acoes{display:flex;gap:8px;flex-wrap:wrap}
+.cabecalho-secao{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.cabecalho-secao h2{margin:0;font-size:19px}
+.tabela-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #e8edf4;font-size:13px;vertical-align:top}
+th{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.04em}
+.badge{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}
+.pendente{background:#fff4d8;color:#8b5c00}.finalizada{background:#e7f7ef;color:#126842}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.campo{display:flex;flex-direction:column;gap:6px}.campo.full{grid-column:1/-1}
+label{font-size:12px;font-weight:800;color:#425166}
+input,select,textarea{width:100%;border:1px solid #cfd9e6;border-radius:10px;padding:11px;background:#fff;color:#182536}
+textarea{min-height:105px;resize:vertical}
+.vazio{padding:28px;text-align:center;color:var(--muted);border:1px dashed #cbd6e4;border-radius:12px;background:#fafcff}
+.login-page{min-height:100vh;display:grid;place-items:center;padding:20px}
+.login-card{width:min(430px,100%);background:#fff;border:1px solid var(--borda);border-radius:18px;padding:28px;box-shadow:0 20px 60px rgba(32,52,78,.12)}
+.login-card h1{margin:12px 0 6px}.login-card p{color:var(--muted);margin:0 0 20px}
+.erro{color:#a52f3c;background:#fff1f2;border:1px solid #f2c9ce;padding:10px;border-radius:9px;margin-top:12px;font-size:13px}
+.toast{position:fixed;right:20px;bottom:20px;background:#1d2a3a;color:white;padding:14px 17px;border-radius:12px;box-shadow:0 15px 35px rgba(0,0,0,.2);z-index:100}
+.modal{position:fixed;inset:0;background:rgba(12,20,32,.5);display:grid;place-items:center;padding:18px;z-index:50}
+.modal-box{width:min(620px,100%);max-height:90vh;overflow:auto;background:white;border-radius:18px;padding:22px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.modal-head h2{margin:0}
+.detalhe{background:#f7f9fc;border:1px solid #e1e7f0;border-radius:10px;padding:12px;margin-bottom:10px}
+.detalhe strong{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
+.link-painel{color:var(--azul);font-weight:800;text-decoration:none}
+.import-box{margin-top:18px;padding-top:18px;border-top:1px solid var(--borda)}
+.import-acoes{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.arquivo-input{display:none}
+.info-importacao{font-size:12px;color:var(--muted);line-height:1.5;margin-top:10px}
+.preview-importacao{margin-top:14px;max-height:310px;overflow:auto;border:1px solid var(--borda);border-radius:12px}
+.preview-importacao table{min-width:720px}
+.import-resumo{margin-top:10px;font-weight:800;font-size:13px}
+.btn-sucesso{background:#16845b;color:#fff}
+.btn-sucesso:hover{background:#106a48}
+.busca-linha{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.busca-linha input{min-width:220px;flex:1}
+.busca-status{font-size:12px;color:var(--muted);margin-top:8px}
+.btn-som{background:#eef6ff;color:#1746b3}
+.btn-som.ativo{background:#e7f7ef;color:#126842}
+
+
+@media(max-width:900px){.grid-cards{grid-template-columns:1fr 1fr}.duas-colunas{grid-template-columns:1fr}}
+@media(max-width:620px){.grid-cards{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.topo{padding:12px}.container{padding:14px}.usuario small{display:none}}
+</style>
+</head>
+<body>
+
+<section id="loginArea" class="login-page">
+  <div class="login-card">
+    <div class="logo">OE</div>
+    <h1>Painel do Diretor</h1>
+    <p>Entre com o usuário gestor cadastrado no Firebase.</p>
+    <form id="formLogin" class="form-grid">
+      <div class="campo full"><label>E-mail</label><input id="email" type="email" required></div>
+      <div class="campo full"><label>Senha</label><input id="senha" type="password" required></div>
+      <button class="btn btn-primario campo full" type="submit">Entrar</button>
+    </form>
+    <div id="erroLogin" class="erro hidden"></div>
+    <p style="margin-top:18px;font-size:13px">Professor: <a class="link-painel" href="prof.html">abrir painel do professor</a></p>
+  </div>
+</section>
+
+<div id="app" class="hidden">
+  <header class="topo">
+    <div class="marca"><div class="logo">OE</div><div><h1>Painel do Diretor</h1><p>Sistema de Ocorrências Escolares</p></div></div>
+    <div class="usuario">
+      <button id="ativarSom" class="btn btn-som" type="button">🔔 Ativar som</button>
+      <div><strong id="nomeUsuario">Diretor</strong><small id="emailUsuario"></small></div>
+      <button id="sair" class="btn btn-secundario">Sair</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="grid-cards">
+      <div class="card"><span class="rotulo">Estudantes</span><div id="qtdEstudantes" class="numero">0</div></div>
+      <div class="card"><span class="rotulo">Pendentes</span><div id="qtdPendentes" class="numero">0</div></div>
+      <div class="card"><span class="rotulo">Finalizadas</span><div id="qtdFinalizadas" class="numero">0</div></div>
+      <div class="card"><span class="rotulo">Total</span><div id="qtdTotal" class="numero">0</div></div>
+    </section>
+
+    <section class="duas-colunas">
+      <div class="card">
+        <div class="cabecalho-secao"><h2>Cadastrar estudante</h2></div>
+        <form id="formEstudante" class="form-grid">
+          <div class="campo"><label>Nome completo</label><input id="alunoNome" required></div>
+          <div class="campo"><label>Turma</label><input id="alunoTurma" placeholder="Ex.: 7º A" required></div>
+          <div class="campo"><label>R.A.</label><input id="alunoRa" required></div>
+          <div class="campo"><label>Dígito</label><input id="alunoDigito" maxlength="2"></div>
+          <div class="campo"><label>Responsável</label><input id="alunoResponsavel"></div>
+          <div class="campo"><label>Contato</label><input id="alunoContato"></div>
+          <button class="btn btn-primario campo full" type="submit">Salvar estudante</button>
+        </form>
+
+        <div class="import-box">
+          <div class="cabecalho-secao">
+            <h2 style="font-size:17px">Importar lista de estudantes</h2>
+          </div>
+
+          <div class="import-acoes">
+            <label for="arquivoEstudantes" class="btn btn-secundario">Selecionar Excel ou CSV</label>
+            <input id="arquivoEstudantes" class="arquivo-input" type="file" accept=".xlsx,.xls,.csv">
+            <button id="baixarModelo" type="button" class="btn btn-secundario">Baixar modelo CSV</button>
+            <button id="importarEstudantes" type="button" class="btn btn-sucesso hidden">Cadastrar lista</button>
+          </div>
+
+          <div class="info-importacao">
+            Colunas aceitas: <strong>Nome</strong>, <strong>Turma</strong>, <strong>RA</strong>,
+            <strong>Dígito</strong>, <strong>Responsável</strong> e <strong>Contato</strong>.
+            A primeira linha da planilha deve conter os títulos das colunas.
+          </div>
+
+          <div id="resumoImportacao" class="import-resumo hidden"></div>
+          <div id="previewImportacao" class="preview-importacao hidden"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cabecalho-secao"><h2>Estudantes cadastrados</h2></div>
+        <div class="busca-linha">
+          <input id="buscaEstudante" placeholder="Digite nome, turma ou RA">
+          <button id="localizarEstudante" type="button" class="btn btn-secundario">Localizar estudante</button>
+          <button id="limparBuscaEstudante" type="button" class="btn btn-secundario hidden">Limpar</button>
+        </div>
+        <div id="statusBuscaEstudante" class="busca-status"></div>
+        <div id="listaEstudantes"></div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <div class="cabecalho-secao"><h2>Localizar ocorrência por estudante</h2></div>
+      <div class="busca-linha">
+        <input id="buscaOcorrencia" placeholder="Digite o nome do estudante">
+        <button id="localizarOcorrencia" type="button" class="btn btn-secundario">Localizar ocorrência</button>
+        <button id="limparBuscaOcorrencia" type="button" class="btn btn-secundario hidden">Limpar</button>
+      </div>
+      <div id="statusBuscaOcorrencia" class="busca-status"></div>
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <div class="cabecalho-secao"><h2>Ocorrências pendentes</h2><span class="badge pendente">Aguardando direção</span></div>
+      <div id="listaPendentes"></div>
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <div class="cabecalho-secao"><h2>Ocorrências finalizadas</h2><span class="badge finalizada">Histórico</span></div>
+      <div id="listaFinalizadas"></div>
+    </section>
+  </main>
+</div>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-head"><h2>Atender ocorrência</h2><button id="fecharModal" class="btn btn-secundario">Fechar</button></div>
+    <div id="detalhesOcorrencia"></div>
+    <form id="formFinalizar" class="form-grid">
+      <div class="campo full"><label>Providência tomada pela direção</label><textarea id="providenciaDirecao" required placeholder="Descreva o atendimento, contato com responsável, orientação ou encaminhamento realizado."></textarea></div>
+      <button class="btn btn-primario campo full" type="submit">Finalizar ocorrência</button>
+    </form>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFirestore, doc, getDoc, collection, addDoc, onSnapshot, updateDoc, serverTimestamp, query, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCsfa0QzC0Nj4Zq9vG0BOd1rWcpYyWVBnU",
+  authDomain: "sistema-ocorrencia.firebaseapp.com",
+  projectId: "sistema-ocorrencia",
+  storageBucket: "sistema-ocorrencia.firebasestorage.app",
+  messagingSenderId: "728625275484",
+  appId: "1:728625275484:web:572e27749d6e53d308bc99"
+};
+
+const appFirebase = initializeApp(firebaseConfig, "diretorApp");
+const auth = getAuth(appFirebase);
+setPersistence(auth, browserLocalPersistence).catch(erro => console.warn("Persistência da sessão não disponível:", erro));
+const db = getFirestore(appFirebase);
+
+const $ = s => document.querySelector(s);
+
+window.addEventListener("error", evento => {
+  console.error("Erro no Painel do Diretor:", evento.error || evento.message);
+  const erro = document.querySelector("#erroLogin");
+  const login = document.querySelector("#loginArea");
+  const app = document.querySelector("#app");
+  if(app) app.classList.add("hidden");
+  if(login) login.classList.remove("hidden");
+  if(erro){
+    erro.textContent = "Erro ao iniciar o painel: " + (evento.error?.message || evento.message || "erro desconhecido");
+    erro.classList.remove("hidden");
+  }
+});
+
+window.addEventListener("unhandledrejection", evento => {
+  console.error("Falha no Painel do Diretor:", evento.reason);
+  const erro = document.querySelector("#erroLogin");
+  const login = document.querySelector("#loginArea");
+  const app = document.querySelector("#app");
+  if(app) app.classList.add("hidden");
+  if(login) login.classList.remove("hidden");
+  if(erro){
+    erro.textContent = "Erro ao conectar ao Firebase: " + (evento.reason?.message || evento.reason?.code || "falha desconhecida");
+    erro.classList.remove("hidden");
+  }
+});
+
+let usuarioAtual = null;
+let ocorrencias = [];
+let estudantes = [];
+let ocorrenciaSelecionada = null;
+let primeiraCarga = true;
+let tempoRealIniciado = false;
+let estudantesParaImportar = [];
+let filtroEstudante = "";
+let filtroOcorrencia = "";
+let somAtivado = false;
+let audioContexto = null;
+
+
+
+function normalizarBusca(valor=""){
+  return String(valor)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase()
+    .trim();
+}
+
+function tocarAvisoSonoro(){
+  if(!somAtivado) return;
+  try{
+    audioContexto = audioContexto || new (window.AudioContext || window.webkitAudioContext)();
+    if(audioContexto.state === "suspended") audioContexto.resume();
+
+    const agora = audioContexto.currentTime;
+    [880, 1046.5, 1318.5].forEach((frequencia, indice)=>{
+      const oscilador = audioContexto.createOscillator();
+      const ganho = audioContexto.createGain();
+      oscilador.type = "sine";
+      oscilador.frequency.value = frequencia;
+      ganho.gain.setValueAtTime(0.0001, agora + indice * 0.18);
+      ganho.gain.exponentialRampToValueAtTime(0.22, agora + indice * 0.18 + 0.02);
+      ganho.gain.exponentialRampToValueAtTime(0.0001, agora + indice * 0.18 + 0.16);
+      oscilador.connect(ganho);
+      ganho.connect(audioContexto.destination);
+      oscilador.start(agora + indice * 0.18);
+      oscilador.stop(agora + indice * 0.18 + 0.18);
+    });
+  }catch(erro){
+    console.warn("Não foi possível tocar o aviso:",erro);
+  }
+}
+
+$("#ativarSom").addEventListener("click", async ()=>{
+  try{
+    audioContexto = audioContexto || new (window.AudioContext || window.webkitAudioContext)();
+    await audioContexto.resume();
+    somAtivado = !somAtivado;
+    $("#ativarSom").textContent = somAtivado ? "🔔 Som ativado" : "🔕 Som desativado";
+    $("#ativarSom").classList.toggle("ativo",somAtivado);
+    if(somAtivado){
+      tocarAvisoSonoro();
+      toast("Aviso sonoro ativado.");
+    }else{
+      toast("Aviso sonoro desativado.");
+    }
+  }catch(erro){
+    toast("O navegador não permitiu ativar o som.");
+  }
+});
+
+function toast(msg){
+  $("#toast").textContent = msg; $("#toast").classList.remove("hidden");
+  setTimeout(() => $("#toast").classList.add("hidden"), 3000);
+}
+function dataBR(v){
+  if(!v) return "-";
+  const d = v.toDate ? v.toDate() : new Date(v);
+  return d.toLocaleString("pt-BR");
+}
+function esc(v=""){ return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+
+async function carregarPerfil(uid){
+  const snap = await getDoc(doc(db,"usuariosSistema",uid));
+  return snap.exists() ? snap.data() : null;
+}
+
+$("#formLogin").addEventListener("submit", async e => {
+  e.preventDefault(); $("#erroLogin").classList.add("hidden");
+  try {
+    await signInWithEmailAndPassword(auth,$("#email").value.trim(),$("#senha").value);
+  } catch(err) {
+    console.error("Erro de login:", err);
+    const mensagens = {
+      "auth/invalid-credential": "E-mail ou senha incorretos.",
+      "auth/user-disabled": "Este usuário foi desativado.",
+      "auth/too-many-requests": "Muitas tentativas. Aguarde um pouco e tente novamente.",
+      "auth/network-request-failed": "Falha de internet ao acessar o Firebase."
+    };
+    $("#erroLogin").textContent = mensagens[err.code] || ("Não foi possível entrar: " + (err.code || err.message));
+    $("#erroLogin").classList.remove("hidden");
+  }
+});
+
+$("#sair").addEventListener("click",()=>signOut(auth));
+$("#fecharModal").addEventListener("click",()=>$("#modal").classList.add("hidden"));
+
+onAuthStateChanged(auth, async user => {
+  try {
+    if(!user){
+      $("#loginArea").classList.remove("hidden");
+      $("#app").classList.add("hidden");
+      return;
+    }
+
+    const perfil = await carregarPerfil(user.uid);
+
+    if(!perfil){
+      await signOut(auth);
+      $("#app").classList.add("hidden");
+      $("#loginArea").classList.remove("hidden");
+      $("#erroLogin").textContent = "Não existe perfil em usuariosSistema para este UID.";
+      $("#erroLogin").classList.remove("hidden");
+      return;
+    }
+
+    if(perfil.ativo !== true){
+      await signOut(auth);
+      $("#app").classList.add("hidden");
+      $("#loginArea").classList.remove("hidden");
+      $("#erroLogin").textContent = "Este usuário está inativo no Firestore.";
+      $("#erroLogin").classList.remove("hidden");
+      return;
+    }
+
+    if(perfil.perfil !== "gestor"){
+      await signOut(auth);
+      $("#app").classList.add("hidden");
+      $("#loginArea").classList.remove("hidden");
+      $("#erroLogin").textContent = 'O campo perfil deve ser exatamente "gestor".';
+      $("#erroLogin").classList.remove("hidden");
+      return;
+    }
+
+    usuarioAtual={uid:user.uid,email:user.email,...perfil};
+    $("#nomeUsuario").textContent=perfil.nome || "Diretor";
+    $("#emailUsuario").textContent=user.email;
+    $("#erroLogin").classList.add("hidden");
+    $("#loginArea").classList.add("hidden");
+    $("#app").classList.remove("hidden");
+    iniciarTempoReal();
+  } catch(erro) {
+    console.error("Erro ao abrir o Painel do Diretor:", erro);
+    $("#app").classList.add("hidden");
+    $("#loginArea").classList.remove("hidden");
+    $("#erroLogin").textContent = "Não foi possível abrir o painel: " + (erro.message || erro.code || "erro desconhecido");
+    $("#erroLogin").classList.remove("hidden");
+  }
+});
+
+function iniciarTempoReal(){
+  if(tempoRealIniciado) return;
+  tempoRealIniciado=true;
+  onSnapshot(query(collection(db,"estudantes")), snap => {
+    estudantes=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.nome||"").localeCompare(b.nome||""));
+    render();
+  }, erro => {
+    console.error("Erro ao carregar estudantes:", erro);
+    toast("Não foi possível carregar os estudantes.");
+  });
+  onSnapshot(query(collection(db,"ocorrencias")), snap => {
+    const anterior = new Set(ocorrencias.map(o=>o.id));
+    ocorrencias=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
+      const da=a.criadaEm?.toMillis?.()||0, dbb=b.criadaEm?.toMillis?.()||0; return dbb-da;
+    });
+    if(!primeiraCarga){
+      const nova=ocorrencias.find(o=>!anterior.has(o.id) && o.status==="Pendente");
+      if(nova){
+        toast("Nova ocorrência recebida: "+nova.alunoNome);
+        tocarAvisoSonoro();
+        try{navigator.vibrate?.(250)}catch{}
+      }
+    }
+    primeiraCarga=false; render();
+  }, erro => {
+    console.error("Erro ao carregar ocorrências:", erro);
+    toast("Não foi possível carregar as ocorrências.");
+  });
+}
+
+
+function normalizarCabecalho(valor=""){
+  return String(valor)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .trim()
+    .toLowerCase()
+    .replace(/[._-]+/g," ")
+    .replace(/\s+/g," ");
+}
+
+function valorDaLinha(linha, nomes){
+  const mapa={};
+  Object.entries(linha).forEach(([chave,valor])=>{
+    mapa[normalizarCabecalho(chave)]=valor;
+  });
+
+  for(const nome of nomes){
+    const chave=normalizarCabecalho(nome);
+    if(mapa[chave]!==undefined && mapa[chave]!==null){
+      return String(mapa[chave]).trim();
+    }
+  }
+  return "";
+}
+
+function converterLinhaEstudante(linha){
+  return {
+    nome:valorDaLinha(linha,["nome","nome completo","aluno","estudante"]),
+    turma:valorDaLinha(linha,["turma","série","serie","classe"]),
+    ra:valorDaLinha(linha,["ra","r.a.","registro do aluno"]),
+    digito:valorDaLinha(linha,["dígito","digito","dv"]),
+    responsavel:valorDaLinha(linha,["responsável","responsavel","nome do responsável","nome do responsavel"]),
+    contato:valorDaLinha(linha,["contato","telefone","celular","telefone do responsável","telefone do responsavel"])
+  };
+}
+
+function renderPreviewImportacao(){
+  const area=$("#previewImportacao");
+  const resumo=$("#resumoImportacao");
+  const botao=$("#importarEstudantes");
+
+  if(!estudantesParaImportar.length){
+    area.classList.add("hidden");
+    resumo.classList.add("hidden");
+    botao.classList.add("hidden");
+    area.innerHTML="";
+    return;
+  }
+
+  resumo.textContent=`${estudantesParaImportar.length} estudante(s) válido(s) encontrado(s) na planilha.`;
+  resumo.classList.remove("hidden");
+  botao.classList.remove("hidden");
+  area.classList.remove("hidden");
+
+  const amostra=estudantesParaImportar.slice(0,30);
+  area.innerHTML=`<table>
+    <thead>
+      <tr>
+        <th>Nome</th><th>Turma</th><th>R.A.</th><th>Dígito</th><th>Responsável</th><th>Contato</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${amostra.map(a=>`<tr>
+        <td>${esc(a.nome)}</td>
+        <td>${esc(a.turma)}</td>
+        <td>${esc(a.ra)}</td>
+        <td>${esc(a.digito)}</td>
+        <td>${esc(a.responsavel)}</td>
+        <td>${esc(a.contato)}</td>
+      </tr>`).join("")}
+    </tbody>
+  </table>
+  ${estudantesParaImportar.length>30?`<div style="padding:10px;font-size:12px;color:#687587">Prévia das primeiras 30 linhas.</div>`:""}`;
+}
+
+$("#arquivoEstudantes").addEventListener("change",async evento=>{
+  const arquivo=evento.target.files?.[0];
+  estudantesParaImportar=[];
+  renderPreviewImportacao();
+  if(!arquivo)return;
+
+  try{
+    if(typeof XLSX==="undefined"){
+      throw new Error("A biblioteca de leitura de Excel não foi carregada.");
+    }
+
+    const dados=await arquivo.arrayBuffer();
+    const workbook=XLSX.read(dados,{type:"array"});
+    const primeiraAba=workbook.Sheets[workbook.SheetNames[0]];
+
+    if(!primeiraAba){
+      throw new Error("A planilha não possui uma aba válida.");
+    }
+
+    const linhas=XLSX.utils.sheet_to_json(primeiraAba,{defval:"",raw:false});
+
+    estudantesParaImportar=linhas
+      .map(converterLinhaEstudante)
+      .filter(a=>a.nome && a.turma && a.ra);
+
+    if(!estudantesParaImportar.length){
+      throw new Error('Nenhuma linha válida. Confira as colunas "Nome", "Turma" e "RA".');
+    }
+
+    renderPreviewImportacao();
+    toast("Planilha lida. Confira a prévia antes de cadastrar.");
+  }catch(erro){
+    console.error("Erro ao ler planilha:",erro);
+    estudantesParaImportar=[];
+    renderPreviewImportacao();
+    $("#resumoImportacao").textContent="Erro: "+(erro.message||"não foi possível ler a planilha.");
+    $("#resumoImportacao").classList.remove("hidden");
+  }
+});
+
+$("#baixarModelo").addEventListener("click",()=>{
+  const conteudo=[
+    ["Nome","Turma","RA","Dígito","Responsável","Contato"],
+    ["Maria da Silva","7º A","123456789","0","Ana da Silva","(14) 99999-9999"]
+  ];
+
+  const csv="\uFEFF"+conteudo
+    .map(linha=>linha.map(valor=>`"${String(valor).replace(/"/g,'""')}"`).join(";"))
+    .join("\n");
+
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  link.href=url;
+  link.download="modelo-estudantes.csv";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+});
+
+$("#importarEstudantes").addEventListener("click",async()=>{
+  if(!estudantesParaImportar.length)return;
+
+  const botao=$("#importarEstudantes");
+  botao.disabled=true;
+  botao.textContent="Cadastrando...";
+
+  try{
+    let cadastrados=0;
+
+    // Firestore batch limit is 500; use groups of 400 for safety.
+    for(let inicio=0;inicio<estudantesParaImportar.length;inicio+=400){
+      const grupo=estudantesParaImportar.slice(inicio,inicio+400);
+      const lote=writeBatch(db);
+
+      grupo.forEach(aluno=>{
+        const referencia=doc(collection(db,"estudantes"));
+        lote.set(referencia,{
+          nome:aluno.nome,
+          turma:aluno.turma,
+          ra:aluno.ra,
+          digito:aluno.digito,
+          responsavel:aluno.responsavel,
+          contato:aluno.contato,
+          criadoEm:serverTimestamp(),
+          origemCadastro:"planilha"
+        });
+      });
+
+      await lote.commit();
+      cadastrados+=grupo.length;
+      botao.textContent=`Cadastrando ${cadastrados}/${estudantesParaImportar.length}`;
+    }
+
+    toast(`${cadastrados} estudante(s) cadastrado(s) com sucesso.`);
+    estudantesParaImportar=[];
+    $("#arquivoEstudantes").value="";
+    renderPreviewImportacao();
+  }catch(erro){
+    console.error("Erro ao importar estudantes:",erro);
+    toast("Erro ao cadastrar a lista: "+(erro.code||erro.message));
+  }finally{
+    botao.disabled=false;
+    botao.textContent="Cadastrar lista";
+  }
+});
+
+$("#formEstudante").addEventListener("submit", async e => {
+  e.preventDefault();
+  await addDoc(collection(db,"estudantes"),{
+    nome:$("#alunoNome").value.trim(), turma:$("#alunoTurma").value.trim(),
+    ra:$("#alunoRa").value.trim(), digito:$("#alunoDigito").value.trim(),
+    responsavel:$("#alunoResponsavel").value.trim(), contato:$("#alunoContato").value.trim(),
+    criadoEm:serverTimestamp()
+  });
+  e.target.reset(); toast("Estudante cadastrado.");
+});
+
+
+function executarBuscaEstudante(){
+  filtroEstudante=$("#buscaEstudante").value;
+  $("#limparBuscaEstudante").classList.toggle("hidden",!filtroEstudante.trim());
+  render();
+}
+$("#localizarEstudante").addEventListener("click",executarBuscaEstudante);
+$("#buscaEstudante").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();executarBuscaEstudante();}});
+$("#limparBuscaEstudante").addEventListener("click",()=>{
+  $("#buscaEstudante").value="";
+  filtroEstudante="";
+  $("#limparBuscaEstudante").classList.add("hidden");
+  render();
+});
+
+function executarBuscaOcorrencia(){
+  filtroOcorrencia=$("#buscaOcorrencia").value;
+  $("#limparBuscaOcorrencia").classList.toggle("hidden",!filtroOcorrencia.trim());
+  render();
+}
+$("#localizarOcorrencia").addEventListener("click",executarBuscaOcorrencia);
+$("#buscaOcorrencia").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();executarBuscaOcorrencia();}});
+$("#limparBuscaOcorrencia").addEventListener("click",()=>{
+  $("#buscaOcorrencia").value="";
+  filtroOcorrencia="";
+  $("#limparBuscaOcorrencia").classList.add("hidden");
+  render();
+});
+
+function render(){
+  const termoEstudante=normalizarBusca(filtroEstudante);
+  const termoOcorrencia=normalizarBusca(filtroOcorrencia);
+
+  const estudantesFiltrados=termoEstudante
+    ? estudantes.filter(a=>
+        normalizarBusca(a.nome).includes(termoEstudante) ||
+        normalizarBusca(a.turma).includes(termoEstudante) ||
+        normalizarBusca(`${a.ra||""}-${a.digito||""}`).includes(termoEstudante)
+      )
+    : estudantes;
+
+  const ocorrenciasFiltradas=termoOcorrencia
+    ? ocorrencias.filter(o=>normalizarBusca(o.alunoNome).includes(termoOcorrencia))
+    : ocorrencias;
+
+  const pend=ocorrenciasFiltradas.filter(o=>o.status!=="Finalizada");
+  const fin=ocorrenciasFiltradas.filter(o=>o.status==="Finalizada");
+  $("#qtdEstudantes").textContent=estudantes.length;
+  $("#qtdPendentes").textContent=pend.length;
+  $("#qtdFinalizadas").textContent=fin.length;
+  $("#qtdTotal").textContent=ocorrencias.length;
+  $("#listaEstudantes").innerHTML=estudantesFiltrados.length ? `<div class="tabela-wrap"><table><thead><tr><th>Nome</th><th>Turma</th><th>R.A.</th></tr></thead><tbody>${estudantesFiltrados.map(a=>`<tr><td>${esc(a.nome)}</td><td>${esc(a.turma)}</td><td>${esc(a.ra)}-${esc(a.digito)}</td></tr>`).join("")}</tbody></table></div>` : '<div class="vazio">Nenhum estudante localizado.</div>';
+  $("#statusBuscaEstudante").textContent=termoEstudante ? `${estudantesFiltrados.length} estudante(s) localizado(s).` : "";
+  $("#statusBuscaOcorrencia").textContent=termoOcorrencia ? `${ocorrenciasFiltradas.length} ocorrência(s) localizada(s) para o estudante.` : "";
+  $("#listaPendentes").innerHTML=pend.length ? tabelaOcorrencias(pend,true) : '<div class="vazio">Nenhuma ocorrência pendente.</div>';
+  $("#listaFinalizadas").innerHTML=fin.length ? tabelaOcorrencias(fin,false) : '<div class="vazio">Nenhuma ocorrência finalizada.</div>';
+  document.querySelectorAll("[data-atender]").forEach(btn=>btn.onclick=()=>abrirOcorrencia(btn.dataset.atender));
+  document.querySelectorAll("[data-ver]").forEach(btn=>btn.onclick=()=>verFinalizada(btn.dataset.ver));
+  document.querySelectorAll("[data-imprimir]").forEach(btn=>btn.onclick=()=>imprimirOcorrencia(btn.dataset.imprimir));
+}
+
+function tabelaOcorrencias(lista, pendente){
+ return `<div class="tabela-wrap"><table><thead><tr><th>Aluno</th><th>Professor</th><th>Tipo</th><th>Data</th><th>Status</th><th></th></tr></thead><tbody>${lista.map(o=>`<tr>
+ <td><strong>${esc(o.alunoNome)}</strong><br><small>${esc(o.alunoTurma||"")}</small></td>
+ <td>${esc(o.professorNome||o.professor||"")}</td><td>${esc(o.tipo||"")}</td><td>${dataBR(o.criadaEm)}</td>
+ <td><span class="badge ${o.status==="Finalizada"?"finalizada":"pendente"}">${esc(o.status||"Pendente")}</span></td>
+ <td>
+   <div class="acoes">
+     <button class="btn ${pendente?"btn-primario":"btn-secundario"}" ${pendente?`data-atender="${o.id}"`:`data-ver="${o.id}"`}>${pendente?"Atender":"Ver"}</button>
+     <button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button>
+   </div>
+ </td>
+ </tr>`).join("")}</tbody></table></div>`;
+}
+
+
+function imprimirOcorrencia(id){
+  const o=ocorrencias.find(x=>x.id===id);
+  if(!o)return;
+
+  const finalizada=o.status==="Finalizada";
+  const janela=window.open("","_blank","width=900,height=700");
+  janela.document.write(`
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8">
+      <title>Ocorrência Escolar</title>
+      <style>
+        body{font-family:Arial,sans-serif;color:#111;padding:30px;line-height:1.45}
+        h1{text-align:center;font-size:22px;margin-bottom:5px}
+        .sub{text-align:center;color:#555;margin-bottom:28px}
+        .linha{border-bottom:1px solid #bbb;padding:9px 0}
+        .linha strong{display:inline-block;min-width:190px}
+        .bloco{border:1px solid #bbb;border-radius:8px;padding:14px;margin-top:16px}
+        .bloco strong{display:block;margin-bottom:8px}
+        .status{font-weight:bold}
+        .assinaturas{display:flex;gap:50px;margin-top:70px}
+        .assinatura{flex:1;text-align:center;border-top:1px solid #222;padding-top:7px}
+        @media print{button{display:none}}
+      </style>
+    </head>
+    <body>
+      <h1>REGISTRO DE OCORRÊNCIA ESCOLAR</h1>
+      <div class="sub">Sistema de Ocorrências Escolares</div>
+      <div class="linha"><strong>Aluno:</strong>${esc(o.alunoNome)}</div>
+      <div class="linha"><strong>Turma:</strong>${esc(o.alunoTurma||"")}</div>
+      <div class="linha"><strong>Professor:</strong>${esc(o.professorNome||o.professor||"")}</div>
+      <div class="linha"><strong>Tipo:</strong>${esc(o.tipo||"")}</div>
+      <div class="linha"><strong>Registrada em:</strong>${dataBR(o.criadaEm)}</div>
+      <div class="linha"><strong>Status:</strong><span class="status">${esc(o.status||"Pendente")}</span></div>
+      <div class="bloco"><strong>Descrição do ocorrido</strong>${esc(o.descricao||"")}</div>
+      <div class="bloco"><strong>Providência inicial do professor</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
+      ${finalizada?`
+        <div class="bloco"><strong>Providência da direção</strong>${esc(o.providenciaDirecao||o.parecerGestor||"")}</div>
+        <div class="linha"><strong>Finalizada em:</strong>${dataBR(o.finalizadaEm)}</div>
+      `:""}
+      <div class="assinaturas">
+        <div class="assinatura">Professor responsável</div>
+        <div class="assinatura">Direção escolar</div>
+      </div>
+      <script>window.onload=()=>window.print();<\/script>
+    </body>
+    </html>
+  `);
+  janela.document.close();
+}
+
+function detalhes(o, finalizada=false){
+ return `
+ <div class="detalhe"><strong>Aluno</strong>${esc(o.alunoNome)} — ${esc(o.alunoTurma||"")}</div>
+ <div class="detalhe"><strong>Professor</strong>${esc(o.professorNome||o.professor||"")}</div>
+ <div class="detalhe"><strong>Tipo</strong>${esc(o.tipo||"")}</div>
+ <div class="detalhe"><strong>Descrição</strong>${esc(o.descricao||"")}</div>
+ <div class="detalhe"><strong>Providência inicial do professor</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
+ ${finalizada?`<div class="detalhe"><strong>Providência da direção</strong>${esc(o.providenciaDirecao||o.parecerGestor||"")}</div><div class="detalhe"><strong>Finalizada em</strong>${dataBR(o.finalizadaEm)}</div>`:""}
+ `;
+}
+function abrirOcorrencia(id){
+ ocorrenciaSelecionada=ocorrencias.find(o=>o.id===id);
+ $("#detalhesOcorrencia").innerHTML=detalhes(ocorrenciaSelecionada);
+ $("#providenciaDirecao").value="";
+ $("#formFinalizar").classList.remove("hidden"); $("#modal").classList.remove("hidden");
+}
+function verFinalizada(id){
+ const o=ocorrencias.find(x=>x.id===id);
+ $("#detalhesOcorrencia").innerHTML=detalhes(o,true);
+ $("#formFinalizar").classList.add("hidden"); $("#modal").classList.remove("hidden");
+}
+$("#formFinalizar").addEventListener("submit",async e=>{
+ e.preventDefault(); if(!ocorrenciaSelecionada)return;
+ await updateDoc(doc(db,"ocorrencias",ocorrenciaSelecionada.id),{
+   status:"Finalizada",
+   providenciaDirecao:$("#providenciaDirecao").value.trim(),
+   parecerGestor:$("#providenciaDirecao").value.trim(),
+   diretorId:usuarioAtual.uid,diretorNome:usuarioAtual.nome,
+   finalizadaEm:serverTimestamp()
+ });
+ $("#modal").classList.add("hidden"); toast("Ocorrência finalizada e enviada ao professor.");
+});
+</script>
+</body>
+</html>
