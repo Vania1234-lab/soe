@@ -740,6 +740,24 @@ async function redefinirSenhaProfessor(id){
   await sendPasswordResetEmail(authCadastroProfessor,professor.email);
   toast("E-mail de redefinição enviado.");
 }
+async function editarResponsavelEstudante(id){
+  const aluno=estudantes.find(a=>a.id===id);
+  if(!aluno)return;
+
+  const novoResponsavel=prompt("Digite o nome do responsável:",aluno.responsavel||"");
+  if(novoResponsavel===null)return;
+
+  const novoContato=prompt("Digite o contato do responsável:",aluno.contato||"");
+  if(novoContato===null)return;
+
+  await updateDoc(doc(db,"estudantes",id),{
+    responsavel:novoResponsavel.trim(),
+    contato:novoContato.trim(),
+    atualizadoEm:serverTimestamp()
+  });
+  toast("Responsável e contato atualizados.");
+}
+
 async function alternarEstudante(id){
   const aluno=estudantes.find(a=>a.id===id);
   if(!aluno)return;
@@ -860,7 +878,9 @@ function render(){
     ? estudantes.filter(a=>
         normalizarBusca(a.nome).includes(termoEstudante) ||
         normalizarBusca(a.turma).includes(termoEstudante) ||
-        normalizarBusca(`${a.ra||""}-${a.digito||""}`).includes(termoEstudante)
+        normalizarBusca(`${a.ra||""}-${a.digito||""}`).includes(termoEstudante) ||
+        normalizarBusca(a.responsavel).includes(termoEstudante) ||
+        normalizarBusca(a.contato).includes(termoEstudante)
       )
     : estudantes;
 
@@ -877,7 +897,7 @@ function render(){
   $("#qtdPendentes").textContent=pend.length;
   $("#qtdFinalizadas").textContent=fin.length;
   $("#qtdTotal").textContent=ocorrencias.length;
-  $("#listaEstudantes").innerHTML=estudantesFiltrados.length ? `<div class="tabela-wrap"><table><thead><tr><th>Nome</th><th>Turma</th><th>R.A.</th><th>Status</th><th>Ação</th></tr></thead><tbody>${estudantesFiltrados.map(a=>`<tr><td>${esc(a.nome)}</td><td>${esc(a.turma)}</td><td>${esc(a.ra)}-${esc(a.digito)}</td><td><span class="badge ${a.ativo===false?"status-inativo":"status-ativo"}">${a.ativo===false?"Inativo":"Ativo"}</span></td><td><button class="btn btn-mini ${a.ativo===false?"btn-sucesso":"btn-perigo"}" data-toggle-aluno="${a.id}">${a.ativo===false?"Ativar":"Inativar"}</button></td></tr>`).join("")}</tbody></table></div>` : '<div class="vazio">Nenhum estudante localizado.</div>';
+  $("#listaEstudantes").innerHTML=estudantesFiltrados.length ? `<div class="tabela-wrap"><table><thead><tr><th>Nome</th><th>Turma</th><th>R.A.</th><th>Responsável</th><th>Contato</th><th>Status</th><th>Ações</th></tr></thead><tbody>${estudantesFiltrados.map(a=>`<tr><td><strong>${esc(a.nome)}</strong></td><td>${esc(a.turma)}</td><td>${esc(a.ra)}-${esc(a.digito)}</td><td>${esc(a.responsavel||"Não informado")}</td><td>${esc(a.contato||"Não informado")}</td><td><span class="badge ${a.ativo===false?"status-inativo":"status-ativo"}">${a.ativo===false?"Inativo":"Ativo"}</span></td><td><div class="acoes"><button class="btn btn-secundario btn-mini" data-edit-responsavel="${a.id}">Editar responsável</button><button class="btn btn-mini ${a.ativo===false?"btn-sucesso":"btn-perigo"}" data-toggle-aluno="${a.id}">${a.ativo===false?"Ativar":"Inativar"}</button></div></td></tr>`).join("")}</tbody></table></div>` : '<div class="vazio">Nenhum estudante localizado.</div>';
   $("#listaProfessores").innerHTML=professores.length ? `<div class="tabela-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Status</th><th>Ações</th></tr></thead><tbody>${professores.map(p=>`<tr><td><strong>${esc(p.nome||"")}</strong></td><td>${esc(p.email||"")}</td><td><span class="badge ${p.ativo===true?"status-ativo":"status-inativo"}">${p.ativo===true?"Ativo":"Inativo"}</span></td><td><div class="acoes"><button class="btn btn-secundario btn-mini" data-edit-prof="${p.id}">Editar nome</button><button class="btn ${p.ativo===true?"btn-perigo":"btn-sucesso"} btn-mini" data-toggle-prof="${p.id}">${p.ativo===true?"Inativar":"Ativar"}</button><button class="btn btn-secundario btn-mini" data-reset-prof="${p.id}">Redefinir senha</button></div></td></tr>`).join("")}</tbody></table></div>` : '<div class="vazio">Nenhum professor cadastrado.</div>';
   $("#resumoProfessores").textContent=`${professores.length} professor(es)`;
   $("#statusBuscaEstudante").textContent=termoEstudante ? `${estudantesFiltrados.length} estudante(s) localizado(s).` : "";
@@ -891,6 +911,7 @@ function render(){
   document.querySelectorAll("[data-edit-prof]").forEach(btn=>btn.onclick=()=>editarProfessor(btn.dataset.editProf));
   document.querySelectorAll("[data-toggle-prof]").forEach(btn=>btn.onclick=()=>alternarProfessor(btn.dataset.toggleProf));
   document.querySelectorAll("[data-reset-prof]").forEach(btn=>btn.onclick=()=>redefinirSenhaProfessor(btn.dataset.resetProf));
+  document.querySelectorAll("[data-edit-responsavel]").forEach(btn=>btn.onclick=()=>editarResponsavelEstudante(btn.dataset.editResponsavel));
   document.querySelectorAll("[data-toggle-aluno]").forEach(btn=>btn.onclick=()=>alternarEstudante(btn.dataset.toggleAluno));
 }
 
