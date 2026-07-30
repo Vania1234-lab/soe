@@ -39,7 +39,7 @@ table{width:100%;border-collapse:collapse}
 th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #e8edf4;font-size:13px;vertical-align:top}
 th{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.04em}
 .badge{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}
-.pendente{background:#fff4d8;color:#8b5c00}.finalizada{background:#e7f7ef;color:#126842}
+.pendente{background:#fff4d8;color:#8b5c00}.em-analise{background:#e8f0ff;color:#1746b3}.aguardando-responsavel{background:#fff0df;color:#9a4f00}.finalizada{background:#e7f7ef;color:#126842}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .campo{display:flex;flex-direction:column;gap:6px}.campo.full{grid-column:1/-1}
 label{font-size:12px;font-weight:800;color:#425166}
@@ -205,6 +205,30 @@ textarea{min-height:105px;resize:vertical}
     </section>
 
     <section class="card" style="margin-top:18px">
+      <div class="cabecalho-secao">
+        <h2>Registrar nova ocorrência</h2>
+        <button id="alternarFormularioOcorrenciaDiretor" type="button" class="btn btn-primario" aria-expanded="false">+ Fazer ocorrência</button>
+      </div>
+      <div id="areaFormularioOcorrenciaDiretor" class="hidden">
+        <form id="formOcorrenciaDiretor" class="form-grid">
+          <div class="campo"><label>Sala / turma</label><select id="turmaOcorrenciaDiretor" required><option value="">Selecione a sala...</option></select></div>
+          <div class="campo"><label>Aluno</label><select id="alunoOcorrenciaDiretor" required disabled><option value="">Selecione primeiro a sala...</option></select></div>
+          <div class="campo"><label>Tipo da ocorrência</label>
+            <select id="tipoOcorrenciaDiretor" required>
+              <option value="">Selecione...</option><option>Indisciplina</option><option>Agressão verbal</option>
+              <option>Agressão física</option><option>Bullying</option><option>Uso indevido de celular</option>
+              <option>Falta recorrente</option><option>Desrespeito</option><option>Outro</option>
+            </select>
+          </div>
+          <div class="campo"><label>Status inicial</label><select id="statusOcorrenciaDiretor"><option value="Pendente">Pendente</option></select></div>
+          <div class="campo full"><label>Descrição do ocorrido</label><textarea id="descricaoOcorrenciaDiretor" required placeholder="Relate objetivamente o que aconteceu."></textarea></div>
+          <div class="campo full"><label>Providência inicial tomada pela direção</label><textarea id="providenciaOcorrenciaDiretor" required placeholder="Descreva a orientação, conversa ou encaminhamento realizado."></textarea></div>
+          <button class="btn btn-primario campo full" type="submit">Registrar ocorrência</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px">
       <div class="cabecalho-secao"><h2>Filtrar ocorrências</h2></div>
       <div class="filtros-grid">
         <div class="campo"><label>Aluno</label><select id="filtroAlunoOcorrencia"><option value="">Todos os alunos</option></select></div>
@@ -233,8 +257,57 @@ textarea{min-height:105px;resize:vertical}
     <div class="modal-head"><h2>Atender ocorrência</h2><button id="fecharModal" class="btn btn-secundario">Fechar</button></div>
     <div id="detalhesOcorrencia"></div>
     <form id="formFinalizar" class="form-grid">
-      <div class="campo full"><label>Providência tomada pela direção</label><textarea id="providenciaDirecao" required placeholder="Descreva o atendimento, contato com responsável, orientação ou encaminhamento realizado."></textarea></div>
-      <button class="btn btn-primario campo full" type="submit">Finalizar ocorrência</button>
+      <div class="campo full">
+        <label>Etapa da ocorrência</label>
+        <select id="statusDirecao" required>
+          <option value="Pendente">Pendente</option>
+          <option value="Em análise">Em análise</option>
+          <option value="Aguardando responsável">Aguardando responsável</option>
+          <option value="Finalizada">Finalizada</option>
+        </select>
+      </div>
+      <div class="campo full">
+        <label>Providência tomada pela direção</label>
+        <select id="providenciaDirecao">
+          <option value="">Selecione a providência</option>
+          <option value="Advertência verbal">Advertência verbal</option>
+          <option value="Advertência por escrito">Advertência por escrito</option>
+          <option value="Suspensão">Suspensão</option>
+        </select>
+      </div>
+      <div id="campoDiasSuspensao" class="campo full hidden">
+        <label>Número de dias de suspensão</label>
+        <input id="diasSuspensao" type="number" min="1" max="30" step="1" placeholder="Ex.: 2">
+      </div>
+      <div class="campo full">
+        <label>Devolutiva da direção</label>
+        <textarea id="devolutivaDirecao" placeholder="Descreva as orientações, conversas, encaminhamentos e decisões tomadas."></textarea>
+      </div>
+      <div class="campo full">
+        <label>Responsável comunicado?</label>
+        <select id="responsavelComunicado" required>
+          <option value="">Selecione...</option>
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+          <option value="Não foi possível contato">Não foi possível contato</option>
+        </select>
+      </div>
+      <div id="camposContatoResponsavel" class="campo full hidden">
+        <div class="form-grid">
+          <div class="campo"><label>Data do contato</label><input id="dataContato" type="date"></div>
+          <div class="campo"><label>Forma de contato</label>
+            <select id="formaContato">
+              <option value="">Selecione...</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Telefone">Telefone</option>
+              <option value="Presencial">Presencial</option>
+              <option value="Agenda escolar">Agenda escolar</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <button id="salvarAtendimento" class="btn btn-primario campo full" type="submit">Salvar atendimento</button>
     </form>
   </div>
 </div>
@@ -491,6 +564,8 @@ function iniciarTempoReal(){
   tempoRealIniciado=true;
   onSnapshot(query(collection(db,"estudantes")), snap => {
     estudantes=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.nome||"").localeCompare(b.nome||""));
+    atualizarSalasOcorrenciaDiretor();
+    atualizarAlunosOcorrenciaDiretor();
     render();
   }, erro => {
     console.error("Erro ao carregar estudantes:", erro);
@@ -809,6 +884,85 @@ $("#formProfessor").addEventListener("submit", async e => {
   }
 });
 
+function atualizarSalasOcorrenciaDiretor(){
+  const seletor=$("#turmaOcorrenciaDiretor");
+  if(!seletor)return;
+  const atual=seletor.value;
+  const salas=[...new Set(estudantes.filter(a=>a.ativo!==false).map(a=>String(a.turma||"").trim()).filter(Boolean))]
+    .sort((a,b)=>a.localeCompare(b,"pt-BR",{numeric:true}));
+  seletor.innerHTML='<option value="">Selecione a sala...</option>'+
+    salas.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
+  seletor.value=salas.includes(atual)?atual:"";
+}
+
+function atualizarAlunosOcorrenciaDiretor(){
+  const sala=$("#turmaOcorrenciaDiretor")?.value||"";
+  const seletor=$("#alunoOcorrenciaDiretor");
+  if(!seletor)return;
+  const alunos=sala
+    ? estudantes.filter(a=>a.ativo!==false && String(a.turma||"").trim()===sala)
+    : [];
+  seletor.disabled=!sala;
+  seletor.innerHTML=!sala
+    ? '<option value="">Selecione primeiro a sala...</option>'
+    : '<option value="">Selecione o estudante...</option>'+
+      alunos.map(a=>`<option value="${a.id}">${esc(a.nome)} — RA ${esc(a.ra||"")}${a.digito?`-${esc(a.digito)}`:""}</option>`).join("");
+}
+
+$("#turmaOcorrenciaDiretor").addEventListener("change",atualizarAlunosOcorrenciaDiretor);
+
+$("#alternarFormularioOcorrenciaDiretor").addEventListener("click",()=>{
+  const area=$("#areaFormularioOcorrenciaDiretor");
+  const abrir=area.classList.contains("hidden");
+  area.classList.toggle("hidden",!abrir);
+  $("#alternarFormularioOcorrenciaDiretor").textContent=abrir?"Fechar formulário":"+ Fazer ocorrência";
+  $("#alternarFormularioOcorrenciaDiretor").setAttribute("aria-expanded",String(abrir));
+  if(abrir){
+    atualizarSalasOcorrenciaDiretor();
+    atualizarAlunosOcorrenciaDiretor();
+    area.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+});
+
+$("#formOcorrenciaDiretor").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const sala=$("#turmaOcorrenciaDiretor").value;
+  const aluno=estudantes.find(a=>a.id===$("#alunoOcorrenciaDiretor").value && String(a.turma||"").trim()===sala);
+  if(!sala){toast("Selecione a sala.");return;}
+  if(!aluno){toast("Selecione um estudante da sala escolhida.");return;}
+
+  const nomeGestor=usuarioAtual?.nome||usuarioAtual?.email||"Direção";
+  await addDoc(collection(db,"ocorrencias"),{
+    alunoId:aluno.id,
+    alunoNome:aluno.nome,
+    alunoTurma:aluno.turma||"",
+    professorId:usuarioAtual.uid,
+    professorNome:nomeGestor,
+    professor:nomeGestor,
+    autorId:usuarioAtual.uid,
+    autorNome:nomeGestor,
+    autorPerfil:"gestor",
+    tipo:$("#tipoOcorrenciaDiretor").value,
+    descricao:$("#descricaoOcorrenciaDiretor").value.trim(),
+    providenciaProfessor:$("#providenciaOcorrenciaDiretor").value.trim(),
+    providencia:$("#providenciaOcorrenciaDiretor").value.trim(),
+    status:"Pendente",
+    parecerGestor:"",
+    respostaDiretor:"",
+    providenciaDirecao:"",
+    criadaEm:serverTimestamp()
+  });
+
+  e.target.reset();
+  $("#alunoOcorrenciaDiretor").disabled=true;
+  $("#alunoOcorrenciaDiretor").innerHTML='<option value="">Selecione primeiro a sala...</option>';
+  $("#areaFormularioOcorrenciaDiretor").classList.add("hidden");
+  $("#alternarFormularioOcorrenciaDiretor").textContent="+ Fazer ocorrência";
+  $("#alternarFormularioOcorrenciaDiretor").setAttribute("aria-expanded","false");
+  toast("Ocorrência registrada e disponibilizada no histórico do estudante.");
+});
+
+
 $("#formEstudante").addEventListener("submit", async e => {
   e.preventDefault();
   await addDoc(collection(db,"estudantes"),{
@@ -870,6 +1024,24 @@ function dataISO(v){
   return `${ano}-${mes}-${dia}`;
 }
 
+function classeStatus(status){
+  if(status==="Finalizada") return "finalizada";
+  if(status==="Em análise") return "em-analise";
+  if(status==="Aguardando responsável") return "aguardando-responsavel";
+  return "pendente";
+}
+function formatarContatoResponsavel(o){
+  const situacao=o.responsavelComunicado||"Não informado";
+  if(situacao!=="Sim") return situacao;
+  const partes=["Sim"];
+  if(o.formaContato) partes.push(o.formaContato);
+  if(o.dataContato){
+    const [a,m,d]=String(o.dataContato).split("-");
+    partes.push(a&&m&&d?`${d}/${m}/${a}`:o.dataContato);
+  }
+  return partes.join(" — ");
+}
+
 function render(){
   const termoEstudante=normalizarBusca(filtroEstudante);
   atualizarOpcoesFiltrosOcorrencia();
@@ -919,7 +1091,7 @@ function tabelaOcorrencias(lista, pendente){
  return `<div class="tabela-wrap"><table><thead><tr><th>Aluno</th><th>Professor</th><th>Tipo</th><th>Data</th><th>Status</th><th></th></tr></thead><tbody>${lista.map(o=>`<tr>
  <td><strong>${esc(o.alunoNome)}</strong><br><small>${esc(o.alunoTurma||"")}</small></td>
  <td>${esc(o.professorNome||o.professor||"")}</td><td>${esc(o.tipo||"")}</td><td>${dataBR(o.criadaEm)}</td>
- <td><span class="badge ${o.status==="Finalizada"?"finalizada":"pendente"}">${esc(o.status||"Pendente")}</span></td>
+ <td><span class="badge ${classeStatus(o.status)}">${esc(o.status||"Pendente")}</span></td>
  <td>
    <div class="acoes">
      <button class="btn ${pendente?"btn-primario":"btn-secundario"}" ${pendente?`data-atender="${o.id}"`:`data-ver="${o.id}"`}>${pendente?"Atender":"Ver"}</button>
@@ -967,10 +1139,10 @@ function imprimirOcorrencia(id){
       <div class="linha"><strong>Status:</strong><span class="status">${esc(o.status||"Pendente")}</span></div>
       <div class="bloco"><strong>Descrição do ocorrido</strong>${esc(o.descricao||"")}</div>
       <div class="bloco"><strong>Providência inicial do professor</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
-      ${finalizada?`
-        <div class="bloco"><strong>Providência da direção</strong>${esc(o.providenciaDirecao||o.parecerGestor||"")}</div>
-        <div class="linha"><strong>Finalizada em:</strong>${dataBR(o.finalizadaEm)}</div>
-      `:""}
+      ${o.providenciaDirecao?`<div class="bloco"><strong>Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
+      ${o.devolutivaDirecao?`<div class="bloco"><strong>Devolutiva da direção</strong>${esc(o.devolutivaDirecao)}</div>`:""}
+      ${o.responsavelComunicado?`<div class="linha"><strong>Responsável comunicado:</strong>${esc(formatarContatoResponsavel(o))}</div>`:""}
+      ${finalizada?`<div class="linha"><strong>Finalizada em:</strong>${dataBR(o.finalizadaEm)}</div>`:""}
       <div class="assinaturas">
         <div class="assinatura">Professor responsável</div>
         <div class="assinatura">Direção escolar</div>
@@ -989,13 +1161,56 @@ function detalhes(o, finalizada=false){
  <div class="detalhe"><strong>Tipo</strong>${esc(o.tipo||"")}</div>
  <div class="detalhe"><strong>Descrição</strong>${esc(o.descricao||"")}</div>
  <div class="detalhe"><strong>Providência inicial do professor</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
- ${finalizada?`<div class="detalhe"><strong>Providência da direção</strong>${esc(o.providenciaDirecao||o.parecerGestor||"")}</div><div class="detalhe"><strong>Finalizada em</strong>${dataBR(o.finalizadaEm)}</div>`:""}
+ <div class="detalhe"><strong>Status</strong>${esc(o.status||"Pendente")}</div>
+ ${o.providenciaDirecao?`<div class="detalhe"><strong>Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
+ ${o.devolutivaDirecao?`<div class="detalhe"><strong>Devolutiva da direção</strong>${esc(o.devolutivaDirecao)}</div>`:""}
+ ${o.responsavelComunicado?`<div class="detalhe"><strong>Responsável comunicado</strong>${esc(formatarContatoResponsavel(o))}</div>`:""}
+ ${finalizada?`<div class="detalhe"><strong>Finalizada em</strong>${dataBR(o.finalizadaEm)}</div>`:""}
  `;
 }
+function formatarProvidenciaDirecao(o){
+ const providencia=o.providenciaDirecao||o.parecerGestor||"";
+ if(providencia==="Suspensão" && Number(o.diasSuspensao)>0){
+   const dias=Number(o.diasSuspensao);
+   return `Suspensão (${dias} ${dias===1?"dia":"dias"})`;
+ }
+ return providencia;
+}
+
+function atualizarCampoSuspensao(){
+ const suspensao=$("#providenciaDirecao").value==="Suspensão";
+ $("#campoDiasSuspensao").classList.toggle("hidden",!suspensao);
+ $("#diasSuspensao").required=suspensao;
+ if(!suspensao) $("#diasSuspensao").value="";
+}
+function atualizarCamposContato(){
+ const comunicado=$("#responsavelComunicado").value==="Sim";
+ $("#camposContatoResponsavel").classList.toggle("hidden",!comunicado);
+ $("#dataContato").required=comunicado;
+ $("#formaContato").required=comunicado;
+ if(!comunicado){ $("#dataContato").value=""; $("#formaContato").value=""; }
+}
+function atualizarObrigatoriedadeFinalizacao(){
+ const finalizando=$("#statusDirecao").value==="Finalizada";
+ $("#providenciaDirecao").required=finalizando;
+ $("#devolutivaDirecao").required=finalizando;
+ $("#salvarAtendimento").textContent=finalizando?"Finalizar ocorrência":"Salvar acompanhamento";
+}
+$("#providenciaDirecao").addEventListener("change",atualizarCampoSuspensao);
+$("#responsavelComunicado").addEventListener("change",atualizarCamposContato);
+$("#statusDirecao").addEventListener("change",atualizarObrigatoriedadeFinalizacao);
+
 function abrirOcorrencia(id){
  ocorrenciaSelecionada=ocorrencias.find(o=>o.id===id);
  $("#detalhesOcorrencia").innerHTML=detalhes(ocorrenciaSelecionada);
- $("#providenciaDirecao").value="";
+ $("#statusDirecao").value=ocorrenciaSelecionada.status||"Pendente";
+ $("#providenciaDirecao").value=ocorrenciaSelecionada.providenciaDirecao||"";
+ $("#diasSuspensao").value=ocorrenciaSelecionada.diasSuspensao||"";
+ $("#devolutivaDirecao").value=ocorrenciaSelecionada.devolutivaDirecao||"";
+ $("#responsavelComunicado").value=ocorrenciaSelecionada.responsavelComunicado||"";
+ $("#dataContato").value=ocorrenciaSelecionada.dataContato||"";
+ $("#formaContato").value=ocorrenciaSelecionada.formaContato||"";
+ atualizarCampoSuspensao(); atualizarCamposContato(); atualizarObrigatoriedadeFinalizacao();
  $("#formFinalizar").classList.remove("hidden"); $("#modal").classList.remove("hidden");
 }
 function verFinalizada(id){
@@ -1005,14 +1220,39 @@ function verFinalizada(id){
 }
 $("#formFinalizar").addEventListener("submit",async e=>{
  e.preventDefault(); if(!ocorrenciaSelecionada)return;
- await updateDoc(doc(db,"ocorrencias",ocorrenciaSelecionada.id),{
-   status:"Finalizada",
-   providenciaDirecao:$("#providenciaDirecao").value.trim(),
-   parecerGestor:$("#providenciaDirecao").value.trim(),
-   diretorId:usuarioAtual.uid,diretorNome:usuarioAtual.nome,
-   finalizadaEm:serverTimestamp()
- });
- $("#modal").classList.add("hidden"); toast("Ocorrência finalizada e enviada ao professor.");
+ const status=$("#statusDirecao").value;
+ const providencia=$("#providenciaDirecao").value;
+ const diasSuspensao=providencia==="Suspensão" ? Number($("#diasSuspensao").value) : 0;
+ const devolutiva=$("#devolutivaDirecao").value.trim();
+ const responsavelComunicado=$("#responsavelComunicado").value;
+ const dataContato=responsavelComunicado==="Sim" ? $("#dataContato").value : "";
+ const formaContato=responsavelComunicado==="Sim" ? $("#formaContato").value : "";
+ if(status==="Finalizada" && (!providencia || !devolutiva)){
+   toast("Para finalizar, informe a providência e a devolutiva da direção."); return;
+ }
+ if(providencia==="Suspensão" && (!Number.isInteger(diasSuspensao) || diasSuspensao<1)){
+   toast("Informe um número válido de dias de suspensão."); $("#diasSuspensao").focus(); return;
+ }
+ if(responsavelComunicado==="Sim" && (!dataContato || !formaContato)){
+   toast("Informe a data e a forma de contato com o responsável."); return;
+ }
+ const dados={
+   status,
+   providenciaDirecao:providencia,
+   parecerGestor:devolutiva,
+   devolutivaDirecao:devolutiva,
+   diasSuspensao,
+   responsavelComunicado,
+   dataContato,
+   formaContato,
+   diretorId:usuarioAtual.uid,
+   diretorNome:usuarioAtual.nome,
+   atualizadoEm:serverTimestamp()
+ };
+ if(status==="Finalizada") dados.finalizadaEm=serverTimestamp();
+ await updateDoc(doc(db,"ocorrencias",ocorrenciaSelecionada.id),dados);
+ $("#modal").classList.add("hidden");
+ toast(status==="Finalizada"?"Ocorrência finalizada e disponibilizada no histórico.":"Acompanhamento salvo com sucesso.");
 });
 </script>
 </body>

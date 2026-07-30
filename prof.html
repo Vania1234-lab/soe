@@ -110,7 +110,11 @@ textarea{min-height:105px;resize:vertical}
     </section>
 
     <section class="card">
-      <div class="cabecalho-secao"><h2>Registrar nova ocorrência</h2><span class="badge pendente">Será enviada imediatamente</span></div>
+      <div class="cabecalho-secao">
+        <h2>Registrar nova ocorrência</h2>
+        <button id="alternarFormularioOcorrencia" type="button" class="btn btn-primario" aria-expanded="false">+ Fazer ocorrência</button>
+      </div>
+      <div id="areaFormularioOcorrencia" class="hidden">
       <div class="busca-linha">
         <input id="buscaEstudante" placeholder="Digite o nome, turma ou RA do estudante">
         <button id="localizarEstudante" type="button" class="btn btn-secundario">Localizar estudante</button>
@@ -118,7 +122,8 @@ textarea{min-height:105px;resize:vertical}
       </div>
       <div id="statusBuscaEstudante" class="busca-status"></div>
       <form id="formOcorrencia" class="form-grid">
-        <div class="campo"><label>Aluno</label><select id="aluno" required><option value="">Selecione...</option></select></div>
+        <div class="campo"><label>Sala / turma</label><select id="turmaOcorrencia" required><option value="">Selecione a sala...</option></select></div>
+        <div class="campo"><label>Aluno</label><select id="aluno" required disabled><option value="">Selecione primeiro a sala...</option></select></div>
         <div class="campo"><label>Tipo da ocorrência</label>
           <select id="tipo" required>
             <option value="">Selecione...</option><option>Indisciplina</option><option>Agressão verbal</option>
@@ -128,8 +133,9 @@ textarea{min-height:105px;resize:vertical}
         </div>
         <div class="campo full"><label>Descrição do ocorrido</label><textarea id="descricao" required placeholder="Relate objetivamente o que aconteceu."></textarea></div>
         <div class="campo full"><label>Providência inicial tomada pelo professor</label><textarea id="providenciaProfessor" required placeholder="Ex.: orientação ao aluno, mudança de lugar, conversa individual..."></textarea></div>
-        <button class="btn btn-primario campo full" type="submit">Enviar ocorrência ao diretor</button>
+        <button class="btn btn-primario campo full" type="submit">Registrar e enviar à direção</button>
       </form>
+      </div>
     </section>
 
     <section class="card" style="margin-top:18px">
@@ -288,6 +294,7 @@ onAuthStateChanged(auth,async user=>{
 function iniciarTempoReal(){
  onSnapshot(query(collection(db,"estudantes")),snap=>{
    estudantes=snap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>a.ativo!==false).sort((a,b)=>(a.nome||"").localeCompare(b.nome||""));
+   atualizarSalasOcorrencia();
    atualizarListaEstudantes();
    render();
  },erro=>{
@@ -307,8 +314,10 @@ function iniciarTempoReal(){
 
 $("#formOcorrencia").addEventListener("submit",async e=>{
  e.preventDefault();
- const aluno=estudantes.find(a=>a.id===$("#aluno").value);
- if(!aluno)return;
+ const sala=$("#turmaOcorrencia").value;
+ const aluno=estudantes.find(a=>a.id===$("#aluno").value && String(a.turma||"").trim()===sala);
+ if(!sala){toast("Selecione a sala.");return;}
+ if(!aluno){toast("Selecione um estudante da sala escolhida.");return;}
  await addDoc(collection(db,"ocorrencias"),{
    alunoId:aluno.id,alunoNome:aluno.nome,alunoTurma:aluno.turma||"",
    professorId:usuarioAtual.uid,professorNome:usuarioAtual.nome||usuarioAtual.email,
@@ -319,23 +328,65 @@ $("#formOcorrencia").addEventListener("submit",async e=>{
    status:"Pendente",parecerGestor:"",respostaDiretor:"",providenciaDirecao:"",
    criadaEm:serverTimestamp()
  });
- e.target.reset();toast("Ocorrência enviada imediatamente ao diretor.");
+ e.target.reset();
+ $("#aluno").disabled=true;
+ $("#aluno").innerHTML='<option value="">Selecione primeiro a sala...</option>';
+ $("#areaFormularioOcorrencia").classList.add("hidden");
+ $("#alternarFormularioOcorrencia").textContent="+ Fazer ocorrência";
+ $("#alternarFormularioOcorrencia").setAttribute("aria-expanded","false");
+ toast("Ocorrência registrada. Ela já está disponível para a direção e para consulta dos professores.");
 });
 
 
-function atualizarListaEstudantes(){
- const termo=normalizarBusca(filtroEstudante);
- const lista=termo
-   ? estudantes.filter(a=>
-       normalizarBusca(a.nome).includes(termo) ||
-       normalizarBusca(a.turma).includes(termo) ||
-       normalizarBusca(`${a.ra||""}-${a.digito||""}`).includes(termo)
-     )
-   : estudantes;
-
- $("#aluno").innerHTML='<option value="">Selecione...</option>'+lista.map(a=>`<option value="${a.id}">${esc(a.nome)} — ${esc(a.turma||"")}</option>`).join("");
- $("#statusBuscaEstudante").textContent=termo ? `${lista.length} estudante(s) localizado(s).` : "";
+function atualizarSalasOcorrencia(){
+ const salaAtual=$("#turmaOcorrencia").value;
+ const salas=[...new Set(estudantes.map(a=>String(a.turma||"").trim()).filter(Boolean))]
+   .sort((a,b)=>a.localeCompare(b, "pt-BR", {numeric:true}));
+ $("#turmaOcorrencia").innerHTML='<option value="">Selecione a sala...</option>'+
+   salas.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
+ $("#turmaOcorrencia").value=salas.includes(salaAtual)?salaAtual:"";
 }
+
+function atualizarListaEstudantes(){
+ const sala=$("#turmaOcorrencia").value;
+ const termo=normalizarBusca(filtroEstudante);
+ let lista=sala ? estudantes.filter(a=>String(a.turma||"").trim()===sala) : [];
+
+ if(termo){
+   lista=lista.filter(a=>
+     normalizarBusca(a.nome).includes(termo) ||
+     normalizarBusca(`${a.ra||""}-${a.digito||""}`).includes(termo)
+   );
+ }
+
+ $("#aluno").disabled=!sala;
+ $("#aluno").innerHTML=!sala
+   ? '<option value="">Selecione primeiro a sala...</option>'
+   : '<option value="">Selecione o estudante...</option>'+lista.map(a=>`<option value="${a.id}">${esc(a.nome)} — RA ${esc(a.ra||"")}${a.digito?`-${esc(a.digito)}`:""}</option>`).join("");
+ $("#statusBuscaEstudante").textContent=!sala
+   ? "Escolha uma sala para carregar os estudantes."
+   : (termo ? `${lista.length} estudante(s) localizado(s) nessa sala.` : `${lista.length} estudante(s) nessa sala.`);
+}
+
+$("#turmaOcorrencia").addEventListener("change",()=>{
+ filtroEstudante="";
+ $("#buscaEstudante").value="";
+ $("#limparBuscaEstudante").classList.add("hidden");
+ atualizarListaEstudantes();
+});
+
+$("#alternarFormularioOcorrencia").addEventListener("click",()=>{
+ const area=$("#areaFormularioOcorrencia");
+ const abrir=area.classList.contains("hidden");
+ area.classList.toggle("hidden",!abrir);
+ $("#alternarFormularioOcorrencia").textContent=abrir?"Fechar formulário":"+ Fazer ocorrência";
+ $("#alternarFormularioOcorrencia").setAttribute("aria-expanded",String(abrir));
+ if(abrir){
+   atualizarSalasOcorrencia();
+   atualizarListaEstudantes();
+   area.scrollIntoView({behavior:"smooth",block:"start"});
+ }
+});
 
 function executarBuscaEstudante(){
  filtroEstudante=$("#buscaEstudante").value;
