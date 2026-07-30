@@ -39,7 +39,7 @@ table{width:100%;border-collapse:collapse}
 th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #e8edf4;font-size:13px;vertical-align:top}
 th{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.04em}
 .badge{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}
-.pendente{background:#fff4d8;color:#8b5c00}.finalizada{background:#e7f7ef;color:#126842}
+.pendente{background:#fff4d8;color:#8b5c00}.em-analise{background:#e8f0ff;color:#1746b3}.aguardando-responsavel{background:#fff0df;color:#9a4f00}.finalizada{background:#e7f7ef;color:#126842}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .campo{display:flex;flex-direction:column;gap:6px}.campo.full{grid-column:1/-1}
 label{font-size:12px;font-weight:800;color:#425166}
@@ -302,7 +302,7 @@ function iniciarTempoReal(){
    toast("Erro ao carregar estudantes: "+(erro.code||erro.message));
  });
  onSnapshot(query(collection(db,"ocorrencias")),snap=>{
-   ocorrencias=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
+   ocorrencias=snap.docs.map(d=>({id:d.id,...d.data()})).filter(o=>o.excluida!==true).sort((a,b)=>{
      const da=a.criadaEm?.toMillis?.()||0,dbb=b.criadaEm?.toMillis?.()||0;return dbb-da;
    });
    render();
@@ -448,6 +448,32 @@ function dataISO(v){
  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
 
+function classeStatus(status){
+ if(status==="Finalizada") return "finalizada";
+ if(status==="Em análise") return "em-analise";
+ if(status==="Aguardando responsável") return "aguardando-responsavel";
+ return "pendente";
+}
+function formatarProvidenciaDirecao(o){
+ const providencia=o.providenciaDirecao||"";
+ if(providencia==="Suspensão" && Number(o.diasSuspensao)>0){
+   const dias=Number(o.diasSuspensao);
+   return `Suspensão (${dias} ${dias===1?"dia":"dias"})`;
+ }
+ return providencia;
+}
+function formatarContatoResponsavel(o){
+ const situacao=o.responsavelComunicado||"Não informado";
+ if(situacao!=="Sim") return situacao;
+ const partes=["Sim"];
+ if(o.formaContato) partes.push(o.formaContato);
+ if(o.dataContato){
+   const [a,m,d]=String(o.dataContato).split("-");
+   partes.push(a&&m&&d?`${d}/${m}/${a}`:o.dataContato);
+ }
+ return partes.join(" — ");
+}
+
 function render(){
  atualizarOpcoesFiltrosOcorrencia();
  const minhasOcorrencias=ocorrencias.filter(o=>o.professorId===usuarioAtual?.uid);
@@ -465,7 +491,7 @@ function render(){
  <td><strong>${esc(o.alunoNome)}</strong><br><small>${esc(o.alunoTurma||"")}</small></td>
  <td>${esc(o.professorNome||o.professor||"Não informado")}</td>
  <td>${esc(o.tipo||"")}</td><td>${dataBR(o.criadaEm)}</td>
- <td><span class="badge ${o.status==="Finalizada"?"finalizada":"pendente"}">${esc(o.status||"Pendente")}</span></td>
+ <td><span class="badge ${classeStatus(o.status)}">${esc(o.status||"Pendente")}</span></td>
  <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver detalhes</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button></div></td></tr>`).join("")}</tbody></table></div>`:(modoOcorrencias==="aluno"&&!filtroAlunoOcorrencia?'<div class="vazio">Selecione um aluno acima para visualizar o histórico completo.</div>':'<div class="vazio">Nenhuma ocorrência encontrada.</div>');
  const filtrosAtivos=[filtroAlunoOcorrencia,filtroSerieOcorrencia,filtroDataOcorrencia].filter(Boolean).length;
  if(modoOcorrencias==="minhas"){
@@ -516,10 +542,10 @@ function imprimirOcorrencia(id){
      <div class="linha"><strong>Status:</strong><span class="status">${esc(o.status||"Pendente")}</span></div>
      <div class="bloco"><strong>Descrição do ocorrido</strong>${esc(o.descricao||"")}</div>
      <div class="bloco"><strong>Providência inicial do professor</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
-     ${finalizada?`
-       <div class="bloco"><strong>Providência da direção</strong>${esc(o.providenciaDirecao||o.parecerGestor||"")}</div>
-       <div class="linha"><strong>Finalizada em:</strong>${dataBR(o.finalizadaEm)}</div>
-     `:""}
+     ${o.providenciaDirecao?`<div class="bloco"><strong>Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
+     ${o.devolutivaDirecao?`<div class="bloco"><strong>Devolutiva da direção</strong>${esc(o.devolutivaDirecao)}</div>`:""}
+     ${o.responsavelComunicado?`<div class="linha"><strong>Responsável comunicado:</strong>${esc(formatarContatoResponsavel(o))}</div>`:""}
+     ${finalizada?`<div class="linha"><strong>Finalizada em:</strong>${dataBR(o.finalizadaEm)}</div>`:""}
      <div class="assinaturas">
        <div class="assinatura">Professor responsável</div>
        <div class="assinatura">Direção escolar</div>
@@ -539,7 +565,10 @@ function abrir(id){
  <div class="detalhe"><strong>Descrição</strong>${esc(o.descricao||"")}</div>
  <div class="detalhe"><strong>Sua providência inicial</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
  <div class="detalhe"><strong>Status</strong>${esc(o.status||"Pendente")}</div>
- ${o.status==="Finalizada"?`<div class="detalhe"><strong>Providência da direção</strong>${esc(o.providenciaDirecao||o.parecerGestor||"")}</div><div class="detalhe"><strong>Finalizada em</strong>${dataBR(o.finalizadaEm)}</div>`:'<div class="detalhe"><strong>Acompanhamento</strong>A ocorrência foi enviada e aguarda atendimento da direção.</div>'}
+ ${o.providenciaDirecao?`<div class="detalhe"><strong>Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
+ ${o.devolutivaDirecao?`<div class="detalhe"><strong>Devolutiva da direção</strong>${esc(o.devolutivaDirecao)}</div>`:""}
+ ${o.responsavelComunicado?`<div class="detalhe"><strong>Responsável comunicado</strong>${esc(formatarContatoResponsavel(o))}</div>`:""}
+ ${o.status==="Finalizada"?`<div class="detalhe"><strong>Finalizada em</strong>${dataBR(o.finalizadaEm)}</div>`:`<div class="detalhe"><strong>Acompanhamento</strong>Etapa atual: ${esc(o.status||"Pendente")}.</div>`}
  `;
  $("#modal").classList.remove("hidden");
 }
