@@ -62,6 +62,7 @@ textarea{min-height:105px;resize:vertical}
 .busca-status{font-size:12px;color:var(--muted);margin-bottom:10px}
 .filtros-grid{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end}
 .filtros-grid .campo{min-width:0}
+.abas-ocorrencias{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.aba-ocorrencia.ativa{background:var(--azul);color:#fff}.aba-ocorrencia:not(.ativa){background:#eaf0fb;color:#23406b}
 @media(max-width:900px){.filtros-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.filtros-grid{grid-template-columns:1fr}}
 
@@ -132,7 +133,11 @@ textarea{min-height:105px;resize:vertical}
     </section>
 
     <section class="card" style="margin-top:18px">
-      <div class="cabecalho-secao"><h2>Minhas ocorrências</h2></div>
+      <div class="cabecalho-secao"><h2 id="tituloListaOcorrencias">Minhas ocorrências</h2></div>
+      <div class="abas-ocorrencias">
+        <button id="btnMinhasOcorrencias" type="button" class="btn aba-ocorrencia ativa">Minhas ocorrências</button>
+        <button id="btnOcorrenciasAluno" type="button" class="btn aba-ocorrencia">Ocorrências por aluno</button>
+      </div>
       <div class="filtros-grid">
         <div class="campo"><label>Aluno</label><select id="filtroAlunoOcorrencia"><option value="">Todos os alunos</option></select></div>
         <div class="campo"><label>Série / turma</label><select id="filtroSerieOcorrencia"><option value="">Todas as séries</option></select></div>
@@ -205,6 +210,7 @@ let filtroEstudante="";
 let filtroAlunoOcorrencia="";
 let filtroSerieOcorrencia="";
 let filtroDataOcorrencia="";
+let modoOcorrencias="minhas";
 
 function normalizarBusca(valor=""){
  return String(valor).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
@@ -345,6 +351,21 @@ $("#limparBuscaEstudante").addEventListener("click",()=>{
  atualizarListaEstudantes();
 });
 
+function definirModoOcorrencias(modo){
+ modoOcorrencias=modo;
+ const minhas=modo==="minhas";
+ $("#btnMinhasOcorrencias").classList.toggle("ativa",minhas);
+ $("#btnOcorrenciasAluno").classList.toggle("ativa",!minhas);
+ $("#tituloListaOcorrencias").textContent=minhas?"Minhas ocorrências":"Ocorrências por aluno";
+ if(minhas){
+   $("#filtroAlunoOcorrencia").value="";
+   filtroAlunoOcorrencia="";
+ }
+ render();
+}
+$("#btnMinhasOcorrencias").addEventListener("click",()=>definirModoOcorrencias("minhas"));
+$("#btnOcorrenciasAluno").addEventListener("click",()=>definirModoOcorrencias("aluno"));
+
 function atualizarOpcoesFiltrosOcorrencia(){
  const alunoAtual=$("#filtroAlunoOcorrencia").value;
  const serieAtual=$("#filtroSerieOcorrencia").value;
@@ -378,22 +399,31 @@ function dataISO(v){
 
 function render(){
  atualizarOpcoesFiltrosOcorrencia();
- const ocorrenciasFiltradas=ocorrencias.filter(o=>
+ const minhasOcorrencias=ocorrencias.filter(o=>o.professorId===usuarioAtual?.uid);
+ const baseOcorrencias=modoOcorrencias==="minhas" ? minhasOcorrencias : ocorrencias;
+ const ocorrenciasFiltradas=baseOcorrencias.filter(o=>
    (!filtroAlunoOcorrencia || o.alunoNome===filtroAlunoOcorrencia) &&
    (!filtroSerieOcorrencia || o.alunoTurma===filtroSerieOcorrencia) &&
    (!filtroDataOcorrencia || dataISO(o.criadaEm)===filtroDataOcorrencia)
  );
- const pend=ocorrenciasFiltradas.filter(o=>o.status!=="Finalizada"),fin=ocorrenciasFiltradas.filter(o=>o.status==="Finalizada");
- $("#qtdTotal").textContent=ocorrencias.length;$("#qtdPendentes").textContent=pend.length;
- $("#qtdFinalizadas").textContent=fin.length;$("#qtdEstudantes").textContent=estudantes.length;
- $("#listaOcorrencias").innerHTML=ocorrenciasFiltradas.length?`<div class="tabela-wrap"><table><thead><tr><th>Aluno</th><th>Professor</th><th>Tipo</th><th>Enviada</th><th>Status</th><th></th></tr></thead><tbody>${ocorrenciasFiltradas.map(o=>`<tr>
+ const pendMinhas=minhasOcorrencias.filter(o=>o.status!=="Finalizada"),finMinhas=minhasOcorrencias.filter(o=>o.status==="Finalizada");
+ $("#qtdTotal").textContent=minhasOcorrencias.length;$("#qtdPendentes").textContent=pendMinhas.length;
+ $("#qtdFinalizadas").textContent=finMinhas.length;$("#qtdEstudantes").textContent=estudantes.length;
+ const ocorrenciasExibidas=(modoOcorrencias==="aluno" && !filtroAlunoOcorrencia)?[]:ocorrenciasFiltradas;
+ $("#listaOcorrencias").innerHTML=ocorrenciasExibidas.length?`<div class="tabela-wrap"><table><thead><tr><th>Aluno</th><th>Professor</th><th>Tipo</th><th>Enviada</th><th>Status</th><th></th></tr></thead><tbody>${ocorrenciasExibidas.map(o=>`<tr>
  <td><strong>${esc(o.alunoNome)}</strong><br><small>${esc(o.alunoTurma||"")}</small></td>
  <td>${esc(o.professorNome||o.professor||"Não informado")}</td>
  <td>${esc(o.tipo||"")}</td><td>${dataBR(o.criadaEm)}</td>
  <td><span class="badge ${o.status==="Finalizada"?"finalizada":"pendente"}">${esc(o.status||"Pendente")}</span></td>
- <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver detalhes</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button></div></td></tr>`).join("")}</tbody></table></div>`:'<div class="vazio">Nenhuma ocorrência encontrada.</div>';
+ <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver detalhes</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button></div></td></tr>`).join("")}</tbody></table></div>`:(modoOcorrencias==="aluno"&&!filtroAlunoOcorrencia?'<div class="vazio">Selecione um aluno acima para visualizar o histórico completo.</div>':'<div class="vazio">Nenhuma ocorrência encontrada.</div>');
  const filtrosAtivos=[filtroAlunoOcorrencia,filtroSerieOcorrencia,filtroDataOcorrencia].filter(Boolean).length;
- $("#statusBuscaOcorrencia").textContent=filtrosAtivos ? `${ocorrenciasFiltradas.length} ocorrência(s) encontrada(s) com os filtros selecionados.` : `${ocorrencias.length} ocorrência(s) registrada(s) na escola.`;
+ if(modoOcorrencias==="minhas"){
+   $("#statusBuscaOcorrencia").textContent=filtrosAtivos ? `${ocorrenciasFiltradas.length} ocorrência(s) sua(s) encontrada(s).` : `${minhasOcorrencias.length} ocorrência(s) registrada(s) por você.`;
+ }else if(!filtroAlunoOcorrencia){
+   $("#statusBuscaOcorrencia").textContent="Selecione um aluno para consultar todas as ocorrências registradas pelos professores.";
+ }else{
+   $("#statusBuscaOcorrencia").textContent=`${ocorrenciasFiltradas.length} ocorrência(s) encontrada(s) para o aluno selecionado.`;
+ }
  document.querySelectorAll("[data-ver]").forEach(b=>b.onclick=()=>abrir(b.dataset.ver));
  document.querySelectorAll("[data-imprimir]").forEach(b=>b.onclick=()=>imprimirOcorrencia(b.dataset.imprimir));
 }
@@ -454,10 +484,9 @@ function abrir(id){
  const o=ocorrencias.find(x=>x.id===id);
  $("#detalhesOcorrencia").innerHTML=`
  <div class="detalhe"><strong>Aluno</strong>${esc(o.alunoNome)} — ${esc(o.alunoTurma||"")}</div>
- <div class="detalhe"><strong>Professor responsável pelo registro</strong>${esc(o.professorNome||o.professor||"Não informado")}</div>
  <div class="detalhe"><strong>Tipo</strong>${esc(o.tipo||"")}</div>
  <div class="detalhe"><strong>Descrição</strong>${esc(o.descricao||"")}</div>
- <div class="detalhe"><strong>Providência inicial do professor</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
+ <div class="detalhe"><strong>Sua providência inicial</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
  <div class="detalhe"><strong>Status</strong>${esc(o.status||"Pendente")}</div>
  ${o.status==="Finalizada"?`<div class="detalhe"><strong>Providência da direção</strong>${esc(o.providenciaDirecao||o.parecerGestor||"")}</div><div class="detalhe"><strong>Finalizada em</strong>${dataBR(o.finalizadaEm)}</div>`:'<div class="detalhe"><strong>Acompanhamento</strong>A ocorrência foi enviada e aguarda atendimento da direção.</div>'}
  `;
