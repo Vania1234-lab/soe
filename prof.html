@@ -288,7 +288,7 @@ function iniciarTempoReal(){
    console.error("Erro ao carregar estudantes:",erro);
    toast("Erro ao carregar estudantes: "+(erro.code||erro.message));
  });
- onSnapshot(query(collection(db,"ocorrencias"),where("professorId","==",usuarioAtual.uid)),snap=>{
+ onSnapshot(query(collection(db,"ocorrencias")),snap=>{
    ocorrencias=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
      const da=a.criadaEm?.toMillis?.()||0,dbb=b.criadaEm?.toMillis?.()||0;return dbb-da;
    });
@@ -386,13 +386,14 @@ function render(){
  const pend=ocorrenciasFiltradas.filter(o=>o.status!=="Finalizada"),fin=ocorrenciasFiltradas.filter(o=>o.status==="Finalizada");
  $("#qtdTotal").textContent=ocorrencias.length;$("#qtdPendentes").textContent=pend.length;
  $("#qtdFinalizadas").textContent=fin.length;$("#qtdEstudantes").textContent=estudantes.length;
- $("#listaOcorrencias").innerHTML=ocorrenciasFiltradas.length?`<div class="tabela-wrap"><table><thead><tr><th>Aluno</th><th>Tipo</th><th>Enviada</th><th>Status</th><th></th></tr></thead><tbody>${ocorrenciasFiltradas.map(o=>`<tr>
+ $("#listaOcorrencias").innerHTML=ocorrenciasFiltradas.length?`<div class="tabela-wrap"><table><thead><tr><th>Aluno</th><th>Professor</th><th>Tipo</th><th>Enviada</th><th>Status</th><th></th></tr></thead><tbody>${ocorrenciasFiltradas.map(o=>`<tr>
  <td><strong>${esc(o.alunoNome)}</strong><br><small>${esc(o.alunoTurma||"")}</small></td>
+ <td>${esc(o.professorNome||o.professor||"Não informado")}</td>
  <td>${esc(o.tipo||"")}</td><td>${dataBR(o.criadaEm)}</td>
  <td><span class="badge ${o.status==="Finalizada"?"finalizada":"pendente"}">${esc(o.status||"Pendente")}</span></td>
- <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver detalhes</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button></div></td></tr>`).join("")}</tbody></table></div>`:'<div class="vazio">Você ainda não registrou ocorrências.</div>';
+ <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver detalhes</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button></div></td></tr>`).join("")}</tbody></table></div>`:'<div class="vazio">Nenhuma ocorrência encontrada.</div>';
  const filtrosAtivos=[filtroAlunoOcorrencia,filtroSerieOcorrencia,filtroDataOcorrencia].filter(Boolean).length;
- $("#statusBuscaOcorrencia").textContent=filtrosAtivos ? `${ocorrenciasFiltradas.length} ocorrência(s) encontrada(s) com os filtros selecionados.` : `${ocorrencias.length} ocorrência(s) registrada(s) por você.`;
+ $("#statusBuscaOcorrencia").textContent=filtrosAtivos ? `${ocorrenciasFiltradas.length} ocorrência(s) encontrada(s) com os filtros selecionados.` : `${ocorrencias.length} ocorrência(s) registrada(s) na escola.`;
  document.querySelectorAll("[data-ver]").forEach(b=>b.onclick=()=>abrir(b.dataset.ver));
  document.querySelectorAll("[data-imprimir]").forEach(b=>b.onclick=()=>imprimirOcorrencia(b.dataset.imprimir));
 }
@@ -453,9 +454,10 @@ function abrir(id){
  const o=ocorrencias.find(x=>x.id===id);
  $("#detalhesOcorrencia").innerHTML=`
  <div class="detalhe"><strong>Aluno</strong>${esc(o.alunoNome)} — ${esc(o.alunoTurma||"")}</div>
+ <div class="detalhe"><strong>Professor responsável pelo registro</strong>${esc(o.professorNome||o.professor||"Não informado")}</div>
  <div class="detalhe"><strong>Tipo</strong>${esc(o.tipo||"")}</div>
  <div class="detalhe"><strong>Descrição</strong>${esc(o.descricao||"")}</div>
- <div class="detalhe"><strong>Sua providência inicial</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
+ <div class="detalhe"><strong>Providência inicial do professor</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
  <div class="detalhe"><strong>Status</strong>${esc(o.status||"Pendente")}</div>
  ${o.status==="Finalizada"?`<div class="detalhe"><strong>Providência da direção</strong>${esc(o.providenciaDirecao||o.parecerGestor||"")}</div><div class="detalhe"><strong>Finalizada em</strong>${dataBR(o.finalizadaEm)}</div>`:'<div class="detalhe"><strong>Acompanhamento</strong>A ocorrência foi enviada e aguarda atendimento da direção.</div>'}
  `;
