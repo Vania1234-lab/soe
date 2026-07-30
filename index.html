@@ -107,6 +107,14 @@ textarea{min-height:105px;resize:vertical}
 .drawer-box{width:min(620px,100%);height:100vh;max-height:none;border-radius:20px 0 0 20px;padding:24px;animation:entrarDrawer .22s ease-out}
 @keyframes entrarDrawer{from{transform:translateX(100%)}to{transform:translateX(0)}}
 @media(max-width:700px){.drawer-box{width:100%;border-radius:0}.ocorrencias-cards{grid-template-columns:1fr}}
+
+/* Alerta reforçado para novas ocorrências */
+.alerta-nova-ocorrencia{position:fixed;top:92px;left:50%;transform:translateX(-50%);z-index:90;background:#b4232f;color:#fff;border:3px solid #fff;border-radius:14px;padding:15px 24px;font-weight:900;box-shadow:0 16px 40px rgba(120,15,30,.35);animation:pulsarAlerta .85s infinite alternate;text-align:center;max-width:calc(100% - 28px)}
+.alerta-nova-ocorrencia small{display:block;font-size:12px;margin-top:4px;font-weight:700;opacity:.95}
+body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animation:piscarCard .8s infinite alternate}
+@keyframes pulsarAlerta{from{transform:translateX(-50%) scale(1);filter:brightness(1)}to{transform:translateX(-50%) scale(1.04);filter:brightness(1.18)}}
+@keyframes piscarCard{from{box-shadow:0 0 0 0 rgba(195,62,77,.12)}to{box-shadow:0 0 0 8px rgba(195,62,77,.24)}}
+
 </style>
 </head>
 <body>
@@ -402,6 +410,9 @@ let somAtivado = false;
 let audioContexto = null;
 let listaEstudantesAberta = false;
 let intervaloPiscarAba = null;
+let alertaSonoroAtivo = false;
+let intervaloRepeticaoAlerta = null;
+let bannerAlerta = null;
 const tituloOriginal = document.title;
 
 
@@ -419,8 +430,42 @@ function pararPiscarAba(){
   if(intervaloPiscarAba){clearInterval(intervaloPiscarAba);intervaloPiscarAba=null;}
   document.title=tituloOriginal;
 }
-document.addEventListener("pointerdown",pararPiscarAba);
-document.addEventListener("keydown",pararPiscarAba);
+function removerBannerAlerta(){
+  if(bannerAlerta){bannerAlerta.remove();bannerAlerta=null;}
+}
+
+function pararAlertaCompleto(){
+  alertaSonoroAtivo=false;
+  if(intervaloRepeticaoAlerta){clearInterval(intervaloRepeticaoAlerta);intervaloRepeticaoAlerta=null;}
+  removerBannerAlerta();
+  document.body.classList.remove("alerta-ocorrencia-ativo");
+  pararPiscarAba();
+}
+
+function mostrarBannerAlerta(alunoNome=""){
+  removerBannerAlerta();
+  bannerAlerta=document.createElement("div");
+  bannerAlerta.className="alerta-nova-ocorrencia";
+  bannerAlerta.setAttribute("role","alert");
+  bannerAlerta.innerHTML=`⚠ NOVA OCORRÊNCIA RECEBIDA<small>${esc(alunoNome||"Clique em qualquer parte da página para silenciar")}</small>`;
+  document.body.appendChild(bannerAlerta);
+}
+
+function iniciarAlertaCompleto(alunoNome=""){
+  pararAlertaCompleto();
+  alertaSonoroAtivo=true;
+  mostrarBannerAlerta(alunoNome);
+  document.body.classList.add("alerta-ocorrencia-ativo");
+  iniciarPiscarAba(alunoNome);
+  tocarAvisoSonoro();
+  intervaloRepeticaoAlerta=setInterval(()=>{
+    if(alertaSonoroAtivo) tocarAvisoSonoro();
+  },20000);
+}
+
+// Qualquer interação do diretor confirma que o alerta foi percebido.
+document.addEventListener("pointerdown",pararAlertaCompleto,{capture:true});
+document.addEventListener("keydown",pararAlertaCompleto,{capture:true});
 
 function configurarMostrarSenha(botaoId,inputId){
   $(botaoId).addEventListener("click",()=>{
@@ -462,18 +507,22 @@ function tocarAvisoSonoro(){
     if(audioContexto.state === "suspended") audioContexto.resume();
 
     const agora = audioContexto.currentTime;
-    [880, 1046.5, 1318.5].forEach((frequencia, indice)=>{
-      const oscilador = audioContexto.createOscillator();
-      const ganho = audioContexto.createGain();
-      oscilador.type = "sine";
-      oscilador.frequency.value = frequencia;
-      ganho.gain.setValueAtTime(0.0001, agora + indice * 0.18);
-      ganho.gain.exponentialRampToValueAtTime(0.22, agora + indice * 0.18 + 0.02);
-      ganho.gain.exponentialRampToValueAtTime(0.0001, agora + indice * 0.18 + 0.16);
+    const notas=[
+      {f:960,i:0,d:.24},{f:1250,i:.28,d:.28},
+      {f:960,i:.72,d:.24},{f:1250,i:1.00,d:.34}
+    ];
+    notas.forEach(({f,i,d})=>{
+      const oscilador=audioContexto.createOscillator();
+      const ganho=audioContexto.createGain();
+      oscilador.type="triangle";
+      oscilador.frequency.setValueAtTime(f,agora+i);
+      ganho.gain.setValueAtTime(.0001,agora+i);
+      ganho.gain.exponentialRampToValueAtTime(.42,agora+i+.025);
+      ganho.gain.exponentialRampToValueAtTime(.0001,agora+i+d);
       oscilador.connect(ganho);
       ganho.connect(audioContexto.destination);
-      oscilador.start(agora + indice * 0.18);
-      oscilador.stop(agora + indice * 0.18 + 0.18);
+      oscilador.start(agora+i);
+      oscilador.stop(agora+i+d+.02);
     });
   }catch(erro){
     console.warn("Não foi possível tocar o aviso:",erro);
@@ -615,9 +664,8 @@ function iniciarTempoReal(){
       const nova=ocorrencias.find(o=>!anterior.has(o.id) && o.status==="Pendente");
       if(nova){
         toast("Nova ocorrência recebida: "+nova.alunoNome);
-        tocarAvisoSonoro();
-        iniciarPiscarAba(nova.alunoNome||"");
-        try{navigator.vibrate?.(250)}catch{}
+        iniciarAlertaCompleto(nova.alunoNome||"");
+        try{navigator.vibrate?.([250,120,250])}catch{}
       }
     }
     primeiraCarga=false; render();
