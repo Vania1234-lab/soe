@@ -1012,6 +1012,8 @@ $("#formOcorrenciaDiretor").addEventListener("submit",async e=>{
     alunoId:aluno.id,
     alunoNome:aluno.nome,
     alunoTurma:aluno.turma||"",
+    responsavelNome:aluno.responsavel||"",
+    responsavelTelefone:aluno.contato||"",
     professorId:usuarioAtual.uid,
     professorNome:nomeGestor,
     professor:nomeGestor,
@@ -1235,11 +1237,21 @@ function tabelaOcorrencias(lista, pendente){
 }
 
 
+
+function dadosResponsavelDaOcorrencia(o){
+  const aluno=estudantes.find(a=>a.id===o.alunoId);
+  return {
+    nome: aluno?.responsavel || o.responsavelNome || o.nomeResponsavel || "Não informado",
+    telefone: aluno?.contato || o.responsavelTelefone || o.telefoneResponsavel || o.contatoResponsavel || "Não informado"
+  };
+}
+
 function imprimirOcorrencia(id){
   const o=ocorrencias.find(x=>x.id===id);
   if(!o)return;
 
   const finalizada=o.status==="Finalizada";
+  const responsavel=dadosResponsavelDaOcorrencia(o);
   const janela=window.open("","_blank","width=900,height=700");
   janela.document.write(`
     <!DOCTYPE html>
@@ -1266,6 +1278,8 @@ function imprimirOcorrencia(id){
       <div class="sub">E. E. Prof. Dr. Moacyr Miranda Pinto<br>Sistema de Ocorrências Escolares</div>
       <div class="linha"><strong>Aluno:</strong>${esc(o.alunoNome)}</div>
       <div class="linha"><strong>Turma:</strong>${esc(o.alunoTurma||"")}</div>
+      <div class="linha"><strong>Responsável:</strong>${esc(responsavel.nome)}</div>
+      <div class="linha"><strong>Telefone do responsável:</strong>${esc(responsavel.telefone)}</div>
       <div class="linha"><strong>Professor:</strong>${esc(o.professorNome||o.professor||"")}</div>
       <div class="linha"><strong>Tipo:</strong>${esc(o.tipo||"")}</div>
       <div class="linha"><strong>Registrada em:</strong>${dataBR(o.criadaEm)}</div>
@@ -1288,8 +1302,11 @@ function imprimirOcorrencia(id){
 }
 
 function detalhes(o, finalizada=false){
+ const responsavel=dadosResponsavelDaOcorrencia(o);
  return `
  <div class="detalhe"><strong>Aluno</strong>${esc(o.alunoNome)} — ${esc(o.alunoTurma||"")}</div>
+ <div class="detalhe"><strong>Responsável</strong>${esc(responsavel.nome)}</div>
+ <div class="detalhe"><strong>Telefone do responsável</strong>${esc(responsavel.telefone)}</div>
  <div class="detalhe"><strong>Professor</strong>${esc(o.professorNome||o.professor||"")}</div>
  <div class="detalhe"><strong>Tipo</strong>${esc(o.tipo||"")}</div>
  <div class="detalhe"><strong>Descrição</strong>${esc(o.descricao||"")}</div>
