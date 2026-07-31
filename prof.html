@@ -168,7 +168,7 @@ textarea{min-height:105px;resize:vertical}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, addDoc, onSnapshot, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, addDoc, onSnapshot, updateDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCsfa0QzC0Nj4Zq9vG0BOd1rWcpYyWVBnU",
@@ -217,6 +217,7 @@ let filtroAlunoOcorrencia="";
 let filtroSerieOcorrencia="";
 let filtroDataOcorrencia="";
 let modoOcorrencias="minhas";
+let ocorrenciaEmEdicao=null;
 
 function normalizarBusca(valor=""){
  return String(valor).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
@@ -318,24 +319,45 @@ $("#formOcorrencia").addEventListener("submit",async e=>{
  const aluno=estudantes.find(a=>a.id===$("#aluno").value && String(a.turma||"").trim()===sala);
  if(!sala){toast("Selecione a sala.");return;}
  if(!aluno){toast("Selecione um estudante da sala escolhida.");return;}
- await addDoc(collection(db,"ocorrencias"),{
+ const dadosFormulario={
    alunoId:aluno.id,alunoNome:aluno.nome,alunoTurma:aluno.turma||"",
    responsavelNome:aluno.responsavel||"",responsavelTelefone:aluno.contato||"",
-   professorId:usuarioAtual.uid,professorNome:usuarioAtual.nome||usuarioAtual.email,
-   professor:usuarioAtual.nome||usuarioAtual.email,
    tipo:$("#tipo").value,descricao:$("#descricao").value.trim(),
    providenciaProfessor:$("#providenciaProfessor").value.trim(),
-   providencia:$("#providenciaProfessor").value.trim(),
-   status:"Pendente",parecerGestor:"",respostaDiretor:"",providenciaDirecao:"",
-   criadaEm:serverTimestamp()
- });
- e.target.reset();
- $("#aluno").disabled=true;
- $("#aluno").innerHTML='<option value="">Selecione primeiro a sala...</option>';
- $("#areaFormularioOcorrencia").classList.add("hidden");
- $("#alternarFormularioOcorrencia").textContent="+ Fazer ocorrência";
- $("#alternarFormularioOcorrencia").setAttribute("aria-expanded","false");
- toast("Ocorrência registrada. Ela já está disponível para a direção e para consulta dos professores.");
+   providencia:$("#providenciaProfessor").value.trim()
+ };
+ try{
+   if(ocorrenciaEmEdicao){
+     const atual=ocorrencias.find(o=>o.id===ocorrenciaEmEdicao);
+     if(!atual || atual.professorId!==usuarioAtual.uid || atual.abertaPelaDirecao===true){
+       toast("A direção já abriu esta ocorrência. A edição não é mais permitida.");
+       ocorrenciaEmEdicao=null;
+       render();
+       return;
+     }
+     await updateDoc(doc(db,"ocorrencias",ocorrenciaEmEdicao),{...dadosFormulario,editadaEm:serverTimestamp()});
+     toast("Ocorrência atualizada com sucesso.");
+   }else{
+     await addDoc(collection(db,"ocorrencias"),{
+       ...dadosFormulario,
+       professorId:usuarioAtual.uid,professorNome:usuarioAtual.nome||usuarioAtual.email,
+       professor:usuarioAtual.nome||usuarioAtual.email,
+       status:"Pendente",parecerGestor:"",respostaDiretor:"",providenciaDirecao:"",
+       abertaPelaDirecao:false,criadaEm:serverTimestamp()
+     });
+     toast("Ocorrência registrada. Ela já está disponível para a direção e para consulta dos professores.");
+   }
+   ocorrenciaEmEdicao=null;
+   e.target.reset();
+   $("#aluno").disabled=true;
+   $("#aluno").innerHTML='<option value="">Selecione primeiro a sala...</option>';
+   $("#areaFormularioOcorrencia").classList.add("hidden");
+   $("#alternarFormularioOcorrencia").textContent="+ Fazer ocorrência";
+   $("#alternarFormularioOcorrencia").setAttribute("aria-expanded","false");
+ }catch(erro){
+   console.error("Erro ao salvar ocorrência:",erro);
+   toast("Não foi possível salvar: "+(erro.code||erro.message));
+ }
 });
 
 
@@ -380,6 +402,12 @@ $("#alternarFormularioOcorrencia").addEventListener("click",()=>{
  const area=$("#areaFormularioOcorrencia");
  const abrir=area.classList.contains("hidden");
  area.classList.toggle("hidden",!abrir);
+ if(!abrir && ocorrenciaEmEdicao){
+   ocorrenciaEmEdicao=null;
+   $("#formOcorrencia").reset();
+   $("#aluno").disabled=true;
+   $("#aluno").innerHTML='<option value="">Selecione primeiro a sala...</option>';
+ }
  $("#alternarFormularioOcorrencia").textContent=abrir?"Fechar formulário":"+ Fazer ocorrência";
  $("#alternarFormularioOcorrencia").setAttribute("aria-expanded",String(abrir));
  if(abrir){
@@ -493,7 +521,7 @@ function render(){
  <td>${esc(o.professorNome||o.professor||"Não informado")}</td>
  <td>${esc(o.tipo||"")}</td><td>${dataBR(o.criadaEm)}</td>
  <td><span class="badge ${classeStatus(o.status)}">${esc(o.status||"Pendente")}</span></td>
- <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver detalhes</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button></div></td></tr>`).join("")}</tbody></table></div>`:(modoOcorrencias==="aluno"&&!filtroAlunoOcorrencia?'<div class="vazio">Selecione um aluno acima para visualizar o histórico completo.</div>':'<div class="vazio">Nenhuma ocorrência encontrada.</div>');
+ <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver detalhes</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button>${modoOcorrencias==="minhas" && o.professorId===usuarioAtual?.uid && o.abertaPelaDirecao!==true ? `<button class="btn btn-secundario" data-editar="${o.id}">Editar</button><button class="btn btn-perigo" data-excluir="${o.id}">Excluir</button>` : ""}</div></td></tr>`).join("")}</tbody></table></div>`:(modoOcorrencias==="aluno"&&!filtroAlunoOcorrencia?'<div class="vazio">Selecione um aluno acima para visualizar o histórico completo.</div>':'<div class="vazio">Nenhuma ocorrência encontrada.</div>');
  const filtrosAtivos=[filtroAlunoOcorrencia,filtroSerieOcorrencia,filtroDataOcorrencia].filter(Boolean).length;
  if(modoOcorrencias==="minhas"){
    $("#statusBuscaOcorrencia").textContent=filtrosAtivos ? `${ocorrenciasFiltradas.length} ocorrência(s) sua(s) encontrada(s).` : `${minhasOcorrencias.length} ocorrência(s) registrada(s) por você.`;
@@ -504,6 +532,50 @@ function render(){
  }
  document.querySelectorAll("[data-ver]").forEach(b=>b.onclick=()=>abrir(b.dataset.ver));
  document.querySelectorAll("[data-imprimir]").forEach(b=>b.onclick=()=>imprimirOcorrencia(b.dataset.imprimir));
+ document.querySelectorAll("[data-editar]").forEach(b=>b.onclick=()=>editarOcorrencia(b.dataset.editar));
+ document.querySelectorAll("[data-excluir]").forEach(b=>b.onclick=()=>excluirOcorrenciaProfessor(b.dataset.excluir));
+}
+
+
+function editarOcorrencia(id){
+ const o=ocorrencias.find(x=>x.id===id);
+ if(!o || o.professorId!==usuarioAtual?.uid)return;
+ if(o.abertaPelaDirecao===true){toast("A direção já abriu esta ocorrência. Ela não pode mais ser editada.");return;}
+ ocorrenciaEmEdicao=id;
+ $("#areaFormularioOcorrencia").classList.remove("hidden");
+ $("#alternarFormularioOcorrencia").textContent="Cancelar edição";
+ $("#alternarFormularioOcorrencia").setAttribute("aria-expanded","true");
+ $("#turmaOcorrencia").value=String(o.alunoTurma||"").trim();
+ atualizarListaEstudantes();
+ $("#aluno").value=o.alunoId||"";
+ $("#tipo").value=o.tipo||"";
+ $("#descricao").value=o.descricao||"";
+ $("#providenciaProfessor").value=o.providenciaProfessor||o.providencia||"";
+ $("#areaFormularioOcorrencia").scrollIntoView({behavior:"smooth",block:"start"});
+ toast("Edite os dados e clique em salvar.");
+}
+
+async function excluirOcorrenciaProfessor(id){
+ const o=ocorrencias.find(x=>x.id===id);
+ if(!o || o.professorId!==usuarioAtual?.uid)return;
+ if(o.abertaPelaDirecao===true){toast("A direção já abriu esta ocorrência. Ela não pode mais ser excluída.");return;}
+ if(!confirm(`Excluir a ocorrência de ${o.alunoNome}? Esta ação a removerá da sua lista.`))return;
+ try{
+   await updateDoc(doc(db,"ocorrencias",id),{
+     excluida:true,
+     excluidaEm:serverTimestamp(),
+     excluidaPor:usuarioAtual.uid,
+     excluidaPorNome:usuarioAtual.nome||usuarioAtual.email||"Professor",
+     excluidaPorPerfil:"professor"
+   });
+   // Remove imediatamente da tela; o onSnapshot confirmará a alteração em seguida.
+   ocorrencias=ocorrencias.filter(item=>item.id!==id);
+   render();
+   toast("Ocorrência enviada para a lixeira.");
+ }catch(erro){
+   console.error("Erro ao excluir ocorrência:",erro);
+   toast("Não foi possível excluir: "+(erro.code||erro.message));
+ }
 }
 
 
@@ -558,6 +630,7 @@ function imprimirOcorrencia(id){
      ${o.providenciaDirecao?`<div class="bloco"><strong>Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
      ${o.devolutivaDirecao?`<div class="bloco"><strong>Devolutiva da direção</strong>${esc(o.devolutivaDirecao)}</div>`:""}
      ${o.responsavelComunicado?`<div class="linha"><strong>Responsável comunicado:</strong>${esc(formatarContatoResponsavel(o))}</div>`:""}
+     ${finalizada?`<div class="linha"><strong>Resolvida por:</strong>${esc(o.resolvidoPorNome||o.diretorNome||o.gestorNome||"Gestor não identificado")}</div>`:""}
      ${finalizada?`<div class="linha"><strong>Finalizada em:</strong>${dataBR(o.finalizadaEm)}</div>`:""}
      <div class="assinaturas">
        <div class="assinatura">Professor responsável</div>
@@ -584,6 +657,7 @@ function abrir(id){
  ${o.providenciaDirecao?`<div class="detalhe"><strong>Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
  ${o.devolutivaDirecao?`<div class="detalhe"><strong>Devolutiva da direção</strong>${esc(o.devolutivaDirecao)}</div>`:""}
  ${o.responsavelComunicado?`<div class="detalhe"><strong>Responsável comunicado</strong>${esc(formatarContatoResponsavel(o))}</div>`:""}
+ ${o.status==="Finalizada"?`<div class="detalhe"><strong>Resolvida por</strong>${esc(o.resolvidoPorNome||o.diretorNome||o.gestorNome||"Gestor não identificado")}</div>`:""}
  ${o.status==="Finalizada"?`<div class="detalhe"><strong>Finalizada em</strong>${dataBR(o.finalizadaEm)}</div>`:`<div class="detalhe"><strong>Acompanhamento</strong>Etapa atual: ${esc(o.status||"Pendente")}.</div>`}
  `;
  $("#modal").classList.remove("hidden");
