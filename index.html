@@ -147,7 +147,7 @@ body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animat
 <main class="container">
 <section class="grid-cards">
 <div class="card"><span class="rotulo">Estudantes</span><div class="numero" id="qtdEstudantes">0</div></div>
-<div class="card"><span class="rotulo">Professores</span><div class="numero" id="qtdProfessores">0</div></div>
+<div class="card"><span class="rotulo">Usuários</span><div class="numero" id="qtdProfessores">0</div></div>
 <div class="card"><span class="rotulo">Pendentes</span><div class="numero" id="qtdPendentes">0</div></div>
 <div class="card"><span class="rotulo">Finalizadas</span><div class="numero" id="qtdFinalizadas">0</div></div>
 <div class="card"><span class="rotulo">Total</span><div class="numero" id="qtdTotal">0</div></div>
@@ -157,22 +157,23 @@ body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animat
 </section>
 <section class="card" style="margin-bottom:18px">
 <div class="cabecalho-secao">
-<h2>Cadastrar professor</h2>
-<span class="badge finalizada">Acesso ao painel do professor</span>
+<h2>Cadastrar usuário</h2>
+<span class="badge finalizada">Professor, funcionário ou líder de clube</span>
 </div>
 <form class="form-grid" id="formProfessor">
 <div class="campo"><label>Nome completo</label><input id="professorNome" required=""/></div>
+<div class="campo"><label>Tipo de usuário</label><select id="professorPerfil" required><option value="professor">Professor</option><option value="funcionario">Funcionário</option><option value="lider_clube">Líder de clube</option></select></div>
 <div class="campo"><label>E-mail</label><input id="professorEmail" required="" type="email"/></div>
 <div class="campo"><label>Senha inicial</label><div class="senha-linha"><input id="professorSenha" minlength="6" required="" type="password"/><button class="btn btn-secundario btn-mini" id="mostrarSenhaProfessor" type="button">Mostrar</button></div></div>
 <div class="campo"><label>Confirmar senha</label><div class="senha-linha"><input id="professorConfirmarSenha" minlength="6" required="" type="password"/><button class="btn btn-secundario btn-mini" id="mostrarConfirmacaoProfessor" type="button">Mostrar</button></div></div>
-<button class="btn btn-primario campo full" id="salvarProfessor" type="submit">Cadastrar professor e liberar acesso</button>
+<button class="btn btn-primario campo full" id="salvarProfessor" type="submit">Cadastrar usuário e liberar acesso</button>
 </form>
-<div class="info-importacao">A senha precisa ter pelo menos 6 caracteres. O professor entrará em <strong>prof.html</strong> com o e-mail e a senha cadastrados aqui.</div>
+<div class="info-importacao">A senha precisa ter pelo menos 6 caracteres. Professores entram em <strong>prof.html</strong>. Funcionários e líderes de clube entram em <strong>funcionarios_lideres.html</strong>.</div>
 <div class="aviso-seguranca">Por segurança, o Firebase não revela senhas já cadastradas. Na lista abaixo, o diretor pode editar o nome, ativar ou inativar o acesso e enviar um e-mail de redefinição de senha.</div>
 <div class="painel-recolhivel">
 <div class="cabecalho-secao">
-<div><h2 style="font-size:17px;margin-bottom:4px">Professores cadastrados</h2><span class="busca-status" id="resumoProfessores"></span></div>
-<button aria-expanded="false" class="btn btn-secundario" id="alternarListaProfessores" type="button">Mostrar professores</button>
+<div><h2 style="font-size:17px;margin-bottom:4px">Usuários cadastrados</h2><span class="busca-status" id="resumoProfessores"></span></div>
+<button aria-expanded="false" class="btn btn-secundario" id="alternarListaProfessores" type="button">Mostrar usuários</button>
 </div>
 <div class="hidden" id="listaProfessores"></div>
 </div>
@@ -481,7 +482,7 @@ configurarMostrarSenha("#mostrarConfirmacaoProfessor","#professorConfirmarSenha"
 $("#alternarListaProfessores").addEventListener("click",()=>{
   const lista=$("#listaProfessores");
   const estaOculta=lista.classList.toggle("hidden");
-  $("#alternarListaProfessores").textContent=estaOculta ? "Mostrar professores" : "Ocultar professores";
+  $("#alternarListaProfessores").textContent=estaOculta ? "Mostrar usuários" : "Ocultar usuários";
   $("#alternarListaProfessores").setAttribute("aria-expanded",String(!estaOculta));
 });
 
@@ -649,7 +650,7 @@ function iniciarTempoReal(){
     toast("Não foi possível carregar os estudantes.");
   });
   onSnapshot(query(collection(db,"usuariosSistema")), snap => {
-    professores=snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.perfil==="professor").sort((a,b)=>(a.nome||"").localeCompare(b.nome||""));
+    professores=snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>["professor","funcionario","lider_clube"].includes(u.perfil)).sort((a,b)=>(a.nome||"").localeCompare(b.nome||""));
     render();
   }, erro => {
     console.error("Erro ao carregar professores:", erro);
@@ -870,7 +871,7 @@ $("#alternarListaEstudantes").addEventListener("click",()=>{
 async function editarProfessor(id){
   const professor=professores.find(p=>p.id===id);
   if(!professor)return;
-  const novoNome=prompt("Digite o nome do professor:",professor.nome||"");
+  const novoNome=prompt("Digite o nome do usuário:",professor.nome||"");
   if(novoNome===null)return;
   if(!novoNome.trim()){toast("O nome não pode ficar vazio.");return;}
   await updateDoc(doc(db,"usuariosSistema",id),{nome:novoNome.trim(),atualizadoEm:serverTimestamp()});
@@ -886,7 +887,7 @@ async function alternarProfessor(id){
 }
 async function redefinirSenhaProfessor(id){
   const professor=professores.find(p=>p.id===id);
-  if(!professor?.email){toast("Professor sem e-mail cadastrado.");return;}
+  if(!professor?.email){toast("Usuário sem e-mail cadastrado.");return;}
   if(!confirm(`Enviar e-mail de redefinição de senha para ${professor.email}?`))return;
   await sendPasswordResetEmail(authCadastroProfessor,professor.email);
   toast("E-mail de redefinição enviado.");
@@ -948,6 +949,7 @@ $("#formProfessor").addEventListener("submit", async e => {
   e.preventDefault();
   const nome=$("#professorNome").value.trim();
   const email=$("#professorEmail").value.trim().toLowerCase();
+  const perfilSelecionado=$("#professorPerfil").value;
   const senha=$("#professorSenha").value;
   const confirmar=$("#professorConfirmarSenha").value;
   const botao=$("#salvarProfessor");
@@ -966,24 +968,24 @@ $("#formProfessor").addEventListener("submit", async e => {
   try{
     const credencial=await createUserWithEmailAndPassword(authCadastroProfessor,email,senha);
     await setDoc(doc(db,"usuariosSistema",credencial.user.uid),{
-      nome, email, perfil:"professor", ativo:true,
+      nome, email, perfil:perfilSelecionado, ativo:true,
       criadoPor:usuarioAtual.uid, criadoEm:serverTimestamp()
     });
     await signOut(authCadastroProfessor);
     e.target.reset();
-    toast("Professor cadastrado. O acesso ao painel foi liberado.");
+    toast("Usuário cadastrado. O acesso correspondente foi liberado.");
   }catch(erro){
-    console.error("Erro ao cadastrar professor:",erro);
+    console.error("Erro ao cadastrar usuário:",erro);
     const mensagens={
       "auth/email-already-in-use":"Este e-mail já está cadastrado.",
       "auth/invalid-email":"Digite um e-mail válido.",
       "auth/weak-password":"A senha precisa ter pelo menos 6 caracteres.",
-      "permission-denied":"As regras do Firestore não permitiram criar o perfil do professor."
+      "permission-denied":"As regras do Firestore não permitiram criar o perfil do usuário."
     };
-    toast(mensagens[erro.code] || ("Erro ao cadastrar professor: "+(erro.code||erro.message)));
+    toast(mensagens[erro.code] || ("Erro ao cadastrar usuário: "+(erro.code||erro.message)));
   }finally{
     botao.disabled=false;
-    botao.textContent="Cadastrar professor e liberar acesso";
+    botao.textContent="Cadastrar usuário e liberar acesso";
   }
 });
 
@@ -1225,8 +1227,9 @@ function render(){
   const textoPendentesTopo=$("#textoPendentesTopo");
   if(textoPendentesTopo) textoPendentesTopo.textContent=pend.length?"As ocorrências mais recentes aparecem primeiro.":"Nenhuma ocorrência exige atendimento neste momento.";
   $("#listaEstudantes").innerHTML=estudantesFiltrados.length ? `<div class="tabela-wrap"><table><thead><tr><th>Nome</th><th>Turma</th><th>R.A.</th><th>Responsável</th><th>Contato</th><th>Status</th><th>Ações</th></tr></thead><tbody>${estudantesFiltrados.map(a=>`<tr><td><strong>${esc(a.nome)}</strong></td><td>${esc(a.turma)}</td><td>${esc(a.ra)}-${esc(a.digito)}</td><td>${esc(a.responsavel||"Não informado")}</td><td>${esc(a.contato||"Não informado")}</td><td><span class="badge ${a.ativo===false?"status-inativo":"status-ativo"}">${a.ativo===false?"Inativo":"Ativo"}</span></td><td><div class="acoes"><button class="btn btn-secundario btn-mini" data-edit-responsavel="${a.id}">Editar responsável</button><button class="btn btn-mini ${a.ativo===false?"btn-sucesso":"btn-perigo"}" data-toggle-aluno="${a.id}">${a.ativo===false?"Ativar":"Inativar"}</button><button class="btn btn-perigo btn-mini" data-excluir-aluno="${a.id}">Excluir</button></div></td></tr>`).join("")}</tbody></table></div>` : '<div class="vazio">Nenhum estudante localizado.</div>';
-  $("#listaProfessores").innerHTML=professores.length ? `<div class="tabela-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Status</th><th>Ações</th></tr></thead><tbody>${professores.map(p=>`<tr><td><strong>${esc(p.nome||"")}</strong></td><td>${esc(p.email||"")}</td><td><span class="badge ${p.ativo===true?"status-ativo":"status-inativo"}">${p.ativo===true?"Ativo":"Inativo"}</span></td><td><div class="acoes"><button class="btn btn-secundario btn-mini" data-edit-prof="${p.id}">Editar nome</button><button class="btn ${p.ativo===true?"btn-perigo":"btn-sucesso"} btn-mini" data-toggle-prof="${p.id}">${p.ativo===true?"Inativar":"Ativar"}</button><button class="btn btn-secundario btn-mini" data-reset-prof="${p.id}">Redefinir senha</button></div></td></tr>`).join("")}</tbody></table></div>` : '<div class="vazio">Nenhum professor cadastrado.</div>';
-  $("#resumoProfessores").textContent=`${professores.length} professor(es)`;
+  const nomePerfilUsuario=perfil=>perfil==="professor"?"Professor":perfil==="funcionario"?"Funcionário":perfil==="lider_clube"?"Líder de clube":"Usuário";
+  $("#listaProfessores").innerHTML=professores.length ? `<div class="tabela-wrap"><table><thead><tr><th>Nome</th><th>Perfil</th><th>E-mail</th><th>Status</th><th>Ações</th></tr></thead><tbody>${professores.map(p=>`<tr><td><strong>${esc(p.nome||"")}</strong></td><td>${esc(nomePerfilUsuario(p.perfil))}</td><td>${esc(p.email||"")}</td><td><span class="badge ${p.ativo===true?"status-ativo":"status-inativo"}">${p.ativo===true?"Ativo":"Inativo"}</span></td><td><div class="acoes"><button class="btn btn-secundario btn-mini" data-edit-prof="${p.id}">Editar nome</button><button class="btn ${p.ativo===true?"btn-perigo":"btn-sucesso"} btn-mini" data-toggle-prof="${p.id}">${p.ativo===true?"Inativar":"Ativar"}</button><button class="btn btn-secundario btn-mini" data-reset-prof="${p.id}">Redefinir senha</button></div></td></tr>`).join("")}</tbody></table></div>` : '<div class="vazio">Nenhum usuário cadastrado.</div>';
+  $("#resumoProfessores").textContent=`${professores.length} usuário(s)`;
   $("#statusBuscaEstudante").textContent=(termoEstudante||filtroSerieEstudante) ? `${estudantesFiltrados.length} estudante(s) localizado(s).` : "";
   const filtrosAtivos=[filtroAlunoOcorrencia,filtroSerieOcorrencia,filtroDataOcorrencia].filter(Boolean).length;
   $("#statusBuscaOcorrencia").textContent=filtrosAtivos ? `${ocorrenciasFiltradas.length} ocorrência(s) encontrada(s) com os filtros selecionados.` : `${ocorrenciasVisiveis.length} ocorrência(s) no total.`;
@@ -1337,6 +1340,7 @@ function imprimirOcorrencia(id){
       ${o.providenciaDirecao?`<div class="bloco"><strong>Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
       ${o.devolutivaDirecao?`<div class="bloco"><strong>Devolutiva da direção</strong>${esc(o.devolutivaDirecao)}</div>`:""}
       ${o.responsavelComunicado?`<div class="linha"><strong>Responsável comunicado:</strong>${esc(formatarContatoResponsavel(o))}</div>`:""}
+      ${finalizada?`<div class="linha"><strong>Resolvida por:</strong>${esc(o.resolvidoPorNome||o.diretorNome||"Gestor não identificado")}</div>`:""}
       ${finalizada?`<div class="linha"><strong>Finalizada em:</strong>${dataBR(o.finalizadaEm)}</div>`:""}
       <div class="assinaturas">
         <div class="assinatura">Professor responsável</div>
@@ -1363,6 +1367,7 @@ function detalhes(o, finalizada=false){
  ${o.providenciaDirecao?`<div class="detalhe"><strong>Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
  ${o.devolutivaDirecao?`<div class="detalhe"><strong>Devolutiva da direção</strong>${esc(o.devolutivaDirecao)}</div>`:""}
  ${o.responsavelComunicado?`<div class="detalhe"><strong>Responsável comunicado</strong>${esc(formatarContatoResponsavel(o))}</div>`:""}
+ ${finalizada?`<div class="detalhe"><strong>Resolvida por</strong>${esc(o.resolvidoPorNome||o.diretorNome||"Gestor não identificado")}</div>`:""}
  ${finalizada?`<div class="detalhe"><strong>Finalizada em</strong>${dataBR(o.finalizadaEm)}</div>`:""}
  `;
 }
@@ -1405,8 +1410,26 @@ function abrirParaFinalizar(id){
   setTimeout(()=>$("#providenciaDirecao").focus(),50);
 }
 
-function abrirOcorrencia(id){
+async function registrarAberturaDirecao(o){
+ if(!o || o.abertaPelaDirecao===true) return;
+ try{
+   await updateDoc(doc(db,"ocorrencias",o.id),{
+     abertaPelaDirecao:true,
+     abertaPelaDirecaoEm:serverTimestamp(),
+     abertaPelaDirecaoPor:usuarioAtual?.uid||null,
+     abertaPelaDirecaoPorNome:usuarioAtual?.nome||usuarioAtual?.email||"Direção"
+   });
+   o.abertaPelaDirecao=true;
+ }catch(erro){
+   console.error("Não foi possível registrar a abertura pela direção:",erro);
+   toast("Não foi possível registrar a visualização da ocorrência.");
+ }
+}
+
+async function abrirOcorrencia(id){
  ocorrenciaSelecionada=ocorrencias.find(o=>o.id===id);
+ if(!ocorrenciaSelecionada)return;
+ await registrarAberturaDirecao(ocorrenciaSelecionada);
  $("#detalhesOcorrencia").innerHTML=detalhes(ocorrenciaSelecionada);
  $("#statusDirecao").value=ocorrenciaSelecionada.status||"Pendente";
  $("#providenciaDirecao").value=ocorrenciaSelecionada.providenciaDirecao||"";
@@ -1418,8 +1441,10 @@ function abrirOcorrencia(id){
  atualizarCampoSuspensao(); atualizarCamposContato(); atualizarObrigatoriedadeFinalizacao();
  $("#formFinalizar").classList.remove("hidden"); $("#modal").classList.remove("hidden");
 }
-function verFinalizada(id){
+async function verFinalizada(id){
  const o=ocorrencias.find(x=>x.id===id);
+ if(!o)return;
+ await registrarAberturaDirecao(o);
  $("#detalhesOcorrencia").innerHTML=detalhes(o,true);
  $("#formFinalizar").classList.add("hidden"); $("#modal").classList.remove("hidden");
 }
@@ -1454,7 +1479,11 @@ $("#formFinalizar").addEventListener("submit",async e=>{
    diretorNome:usuarioAtual.nome,
    atualizadoEm:serverTimestamp()
  };
- if(status==="Finalizada") dados.finalizadaEm=serverTimestamp();
+ if(status==="Finalizada") {
+   dados.finalizadaEm=serverTimestamp();
+   dados.resolvidoPorId=usuarioAtual.uid;
+   dados.resolvidoPorNome=usuarioAtual.nome || usuarioAtual.email || "Gestor";
+ }
  await updateDoc(doc(db,"ocorrencias",ocorrenciaSelecionada.id),dados);
  $("#modal").classList.add("hidden");
  toast(status==="Finalizada"?"Ocorrência finalizada e disponibilizada no histórico.":"Acompanhamento salvo com sucesso.");
