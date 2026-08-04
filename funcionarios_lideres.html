@@ -73,6 +73,7 @@ textarea{min-height:105px;resize:vertical}
 .login-escola{text-align:center;font-size:13px;font-weight:800;color:#294364;margin:-2px 0 16px}
 .sessao-info{text-align:center;font-size:11px;color:var(--muted);margin-top:12px;line-height:1.45}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -502,11 +503,12 @@ function render(){
  <td>${esc(o.professorNome||o.professor||"Não informado")}</td>
  <td>${esc(o.tipo||"")}</td><td>${dataBR(o.criadaEm)}</td>
  <td><span class="badge ${classeStatus(o.status)}">${esc(o.status||"Pendente")}</span></td>
- <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver detalhes</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button>${o.professorId===usuarioAtual?.uid && o.abertaPelaDirecao!==true ? `<button class="btn btn-secundario" data-editar="${o.id}">Editar</button><button class="btn btn-perigo" data-excluir="${o.id}">Excluir</button>` : ""}</div></td></tr>`).join("")}</tbody></table></div>`:'<div class="vazio">Nenhuma ocorrência encontrada.</div>';
+ <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver detalhes</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button><button class="btn btn-secundario" data-pdf="${o.id}">Baixar PDF</button>${o.professorId===usuarioAtual?.uid && o.abertaPelaDirecao!==true ? `<button class="btn btn-secundario" data-editar="${o.id}">Editar</button><button class="btn btn-perigo" data-excluir="${o.id}">Excluir</button>` : ""}</div></td></tr>`).join("")}</tbody></table></div>`:'<div class="vazio">Nenhuma ocorrência encontrada.</div>';
  const filtrosAtivos=[filtroAlunoOcorrencia,filtroSerieOcorrencia,filtroDataOcorrencia].filter(Boolean).length;
  $("#statusBuscaOcorrencia").textContent=filtrosAtivos ? `${ocorrenciasFiltradas.length} ocorrência(s) sua(s) encontrada(s).` : `${minhasOcorrencias.length} ocorrência(s) registrada(s) por você.`;
  document.querySelectorAll("[data-ver]").forEach(b=>b.onclick=()=>abrir(b.dataset.ver));
  document.querySelectorAll("[data-imprimir]").forEach(b=>b.onclick=()=>imprimirOcorrencia(b.dataset.imprimir));
+ document.querySelectorAll("[data-pdf]").forEach(b=>b.onclick=()=>baixarPdfOcorrencia(b.dataset.pdf));
  document.querySelectorAll("[data-editar]").forEach(b=>b.onclick=()=>editarOcorrencia(b.dataset.editar));
  document.querySelectorAll("[data-excluir]").forEach(b=>b.onclick=()=>excluirOcorrenciaProfessor(b.dataset.excluir));
 }
@@ -560,6 +562,74 @@ function dadosResponsavelDaOcorrencia(o){
     nome: aluno?.responsavel || o.responsavelNome || o.nomeResponsavel || "Não informado",
     telefone: aluno?.contato || o.responsavelTelefone || o.telefoneResponsavel || o.contatoResponsavel || "Não informado"
   };
+}
+
+
+function nomeArquivoPdf(o){
+  const aluno=String(o.alunoNome||"estudante")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-zA-Z0-9_-]+/g,"_").replace(/^_+|_+$/g,"");
+  const data=o.criadaEm?.toDate?.()||new Date();
+  const dia=String(data.getDate()).padStart(2,"0");
+  const mes=String(data.getMonth()+1).padStart(2,"0");
+  const ano=data.getFullYear();
+  return `ocorrencia_${aluno||"estudante"}_${ano}-${mes}-${dia}.pdf`;
+}
+
+async function baixarPdfOcorrencia(id){
+  const o=ocorrencias.find(x=>x.id===id);
+  if(!o)return;
+  if(typeof html2pdf!=="function"){
+    toast("Não foi possível carregar o gerador de PDF. Verifique a internet e tente novamente.");
+    return;
+  }
+
+  const finalizada=o.status==="Finalizada";
+  const responsavel=dadosResponsavelDaOcorrencia(o);
+  const area=document.createElement("div");
+  area.style.cssText="font-family:Arial,sans-serif;color:#111;padding:28px;line-height:1.45;background:#fff;width:760px";
+  area.innerHTML=`
+    <div style="text-align:center;margin-bottom:24px">
+      <h1 style="font-size:22px;margin:0 0 6px">REGISTRO DE OCORRÊNCIA ESCOLAR</h1>
+      <div style="color:#555">E. E. Prof. Dr. Moacyr Miranda Pinto<br>Sistema de Ocorrências Escolares</div>
+    </div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Aluno:</strong>${esc(o.alunoNome)}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Turma:</strong>${esc(o.alunoTurma||"")}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Responsável:</strong>${esc(responsavel.nome)}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Telefone do responsável:</strong>${esc(responsavel.telefone)}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Registrada por:</strong>${esc(o.professorNome||o.professor||"")}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Tipo:</strong>${esc(o.tipo||"")}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Registrada em:</strong>${dataBR(o.criadaEm)}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Status:</strong>${esc(o.status||"Pendente")}</div>
+    <div style="border:1px solid #bbb;border-radius:8px;padding:13px;margin-top:15px"><strong style="display:block;margin-bottom:7px">Descrição do ocorrido</strong>${esc(o.descricao||"")}</div>
+    <div style="border:1px solid #bbb;border-radius:8px;padding:13px;margin-top:15px"><strong style="display:block;margin-bottom:7px">Providência inicial</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
+    ${o.providenciaDirecao?`<div style="border:1px solid #bbb;border-radius:8px;padding:13px;margin-top:15px"><strong style="display:block;margin-bottom:7px">Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
+    ${o.devolutivaDirecao?`<div style="border:1px solid #bbb;border-radius:8px;padding:13px;margin-top:15px"><strong style="display:block;margin-bottom:7px">Devolutiva da direção</strong>${esc(o.devolutivaDirecao)}</div>`:""}
+    ${o.responsavelComunicado?`<div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Responsável comunicado:</strong>${esc(formatarContatoResponsavel(o))}</div>`:""}
+    ${finalizada?`<div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Resolvida por:</strong>${esc(o.resolvidoPorNome||o.diretorNome||o.gestorNome||"Gestor não identificado")}</div>`:""}
+    ${finalizada?`<div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Finalizada em:</strong>${dataBR(o.finalizadaEm)}</div>`:""}
+    <div style="display:flex;gap:50px;margin-top:65px">
+      <div style="flex:1;text-align:center;border-top:1px solid #222;padding-top:7px">Responsável pelo registro</div>
+      <div style="flex:1;text-align:center;border-top:1px solid #222;padding-top:7px">Direção escolar</div>
+    </div>`;
+
+  document.body.appendChild(area);
+  try{
+    await html2pdf().set({
+      margin:[10,10,10,10],
+      filename:nomeArquivoPdf(o),
+      image:{type:"jpeg",quality:0.98},
+      html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},
+      jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},
+      pagebreak:{mode:["avoid-all","css","legacy"]}
+    }).from(area).save();
+    toast("PDF baixado com sucesso.");
+  }catch(erro){
+    console.error("Erro ao gerar PDF:",erro);
+    toast("Não foi possível gerar o PDF.");
+  }finally{
+    area.remove();
+  }
 }
 
 function imprimirOcorrencia(id){

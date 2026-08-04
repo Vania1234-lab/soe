@@ -116,6 +116,7 @@ body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animat
 @keyframes piscarCard{from{box-shadow:0 0 0 0 rgba(195,62,77,.12)}to{box-shadow:0 0 0 8px rgba(195,62,77,.24)}}
 
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 <section class="login-page" id="loginArea">
@@ -157,8 +158,7 @@ body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animat
 </section>
 <section class="card" style="margin-bottom:18px">
 <div class="cabecalho-secao">
-<h2>Cadastrar usuário</h2>
-<span class="badge finalizada">Professor, funcionário ou líder de clube</span>
+<h2>Cadastrar usuário <span style="font-size:14px;color:var(--muted);font-weight:700">(Professores, Funcionários ou Líderes de Clube)</span></h2>
 </div>
 <form class="form-grid" id="formProfessor">
 <div class="campo"><label>Nome completo</label><input id="professorNome" required=""/></div>
@@ -1243,6 +1243,7 @@ function render(){
   document.querySelectorAll("[data-ver]").forEach(btn=>btn.onclick=()=>verFinalizada(btn.dataset.ver));
   document.querySelectorAll("[data-finalizar-rapido]").forEach(btn=>btn.onclick=()=>abrirParaFinalizar(btn.dataset.finalizarRapido));
   document.querySelectorAll("[data-imprimir]").forEach(btn=>btn.onclick=()=>imprimirOcorrencia(btn.dataset.imprimir));
+  document.querySelectorAll("[data-pdf]").forEach(btn=>btn.onclick=()=>baixarPdfOcorrencia(btn.dataset.pdf));
   document.querySelectorAll("[data-edit-prof]").forEach(btn=>btn.onclick=()=>editarProfessor(btn.dataset.editProf));
   document.querySelectorAll("[data-toggle-prof]").forEach(btn=>btn.onclick=()=>alternarProfessor(btn.dataset.toggleProf));
   document.querySelectorAll("[data-reset-prof]").forEach(btn=>btn.onclick=()=>redefinirSenhaProfessor(btn.dataset.resetProf));
@@ -1273,7 +1274,7 @@ function tabelaOcorrencias(lista, pendente){
        <div class="acoes">
          <button class="btn btn-primario" data-atender="${o.id}">Visualizar / atender</button>
          <button class="btn btn-sucesso" data-finalizar-rapido="${o.id}">Finalizar</button>
-         <button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button>
+         <button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button><button class="btn btn-secundario" data-pdf="${o.id}">Baixar PDF</button>
          <button class="btn btn-perigo" data-excluir-ocorrencia="${o.id}">Excluir</button>
        </div>
      </article>`;
@@ -1283,7 +1284,7 @@ function tabelaOcorrencias(lista, pendente){
  <td><strong>${esc(o.alunoNome)}</strong><br><small>${esc(o.alunoTurma||"")}</small></td>
  <td>${esc(o.professorNome||o.professor||"")}</td><td>${esc(o.tipo||"")}</td><td>${dataBR(o.criadaEm)}</td>
  <td><span class="badge ${classeStatus(o.status)}">${esc(o.status||"Pendente")}</span></td>
- <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button><button class="btn btn-perigo" data-excluir-ocorrencia="${o.id}">Excluir</button></div></td>
+ <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button><button class="btn btn-secundario" data-pdf="${o.id}">Baixar PDF</button><button class="btn btn-perigo" data-excluir-ocorrencia="${o.id}">Excluir</button></div></td>
  </tr>`).join("")}</tbody></table></div>`;
 }
 
@@ -1295,6 +1296,74 @@ function dadosResponsavelDaOcorrencia(o){
     nome: aluno?.responsavel || o.responsavelNome || o.nomeResponsavel || "Não informado",
     telefone: aluno?.contato || o.responsavelTelefone || o.telefoneResponsavel || o.contatoResponsavel || "Não informado"
   };
+}
+
+
+function nomeArquivoPdf(o){
+  const aluno=String(o.alunoNome||"estudante")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-zA-Z0-9_-]+/g,"_").replace(/^_+|_+$/g,"");
+  const data=o.criadaEm?.toDate?.()||new Date();
+  const dia=String(data.getDate()).padStart(2,"0");
+  const mes=String(data.getMonth()+1).padStart(2,"0");
+  const ano=data.getFullYear();
+  return `ocorrencia_${aluno||"estudante"}_${ano}-${mes}-${dia}.pdf`;
+}
+
+async function baixarPdfOcorrencia(id){
+  const o=ocorrencias.find(x=>x.id===id);
+  if(!o)return;
+  if(typeof html2pdf!=="function"){
+    toast("Não foi possível carregar o gerador de PDF. Verifique a internet e tente novamente.");
+    return;
+  }
+
+  const finalizada=o.status==="Finalizada";
+  const responsavel=dadosResponsavelDaOcorrencia(o);
+  const area=document.createElement("div");
+  area.style.cssText="font-family:Arial,sans-serif;color:#111;padding:28px;line-height:1.45;background:#fff;width:760px";
+  area.innerHTML=`
+    <div style="text-align:center;margin-bottom:24px">
+      <h1 style="font-size:22px;margin:0 0 6px">REGISTRO DE OCORRÊNCIA ESCOLAR</h1>
+      <div style="color:#555">E. E. Prof. Dr. Moacyr Miranda Pinto<br>Sistema de Ocorrências Escolares</div>
+    </div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Aluno:</strong>${esc(o.alunoNome)}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Turma:</strong>${esc(o.alunoTurma||"")}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Responsável:</strong>${esc(responsavel.nome)}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Telefone do responsável:</strong>${esc(responsavel.telefone)}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Registrada por:</strong>${esc(o.professorNome||o.professor||"")}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Tipo:</strong>${esc(o.tipo||"")}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Registrada em:</strong>${dataBR(o.criadaEm)}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Status:</strong>${esc(o.status||"Pendente")}</div>
+    <div style="border:1px solid #bbb;border-radius:8px;padding:13px;margin-top:15px"><strong style="display:block;margin-bottom:7px">Descrição do ocorrido</strong>${esc(o.descricao||"")}</div>
+    <div style="border:1px solid #bbb;border-radius:8px;padding:13px;margin-top:15px"><strong style="display:block;margin-bottom:7px">Providência inicial</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
+    ${o.providenciaDirecao?`<div style="border:1px solid #bbb;border-radius:8px;padding:13px;margin-top:15px"><strong style="display:block;margin-bottom:7px">Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
+    ${o.devolutivaDirecao?`<div style="border:1px solid #bbb;border-radius:8px;padding:13px;margin-top:15px"><strong style="display:block;margin-bottom:7px">Devolutiva da direção</strong>${esc(o.devolutivaDirecao)}</div>`:""}
+    ${o.responsavelComunicado?`<div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Responsável comunicado:</strong>${esc(formatarContatoResponsavel(o))}</div>`:""}
+    ${finalizada?`<div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Resolvida por:</strong>${esc(o.resolvidoPorNome||o.diretorNome||o.gestorNome||"Gestor não identificado")}</div>`:""}
+    ${finalizada?`<div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Finalizada em:</strong>${dataBR(o.finalizadaEm)}</div>`:""}
+    <div style="display:flex;gap:50px;margin-top:65px">
+      <div style="flex:1;text-align:center;border-top:1px solid #222;padding-top:7px">Responsável pelo registro</div>
+      <div style="flex:1;text-align:center;border-top:1px solid #222;padding-top:7px">Direção escolar</div>
+    </div>`;
+
+  document.body.appendChild(area);
+  try{
+    await html2pdf().set({
+      margin:[10,10,10,10],
+      filename:nomeArquivoPdf(o),
+      image:{type:"jpeg",quality:0.98},
+      html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},
+      jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},
+      pagebreak:{mode:["avoid-all","css","legacy"]}
+    }).from(area).save();
+    toast("PDF baixado com sucesso.");
+  }catch(erro){
+    console.error("Erro ao gerar PDF:",erro);
+    toast("Não foi possível gerar o PDF.");
+  }finally{
+    area.remove();
+  }
 }
 
 function imprimirOcorrencia(id){
