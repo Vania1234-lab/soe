@@ -72,6 +72,31 @@ textarea{min-height:105px;resize:vertical}
 .login-brasao{width:112px;height:112px;object-fit:contain;display:block;margin:0 auto 12px}
 .login-escola{text-align:center;font-size:13px;font-weight:800;color:#294364;margin:-2px 0 16px}
 .sessao-info{text-align:center;font-size:11px;color:var(--muted);margin-top:12px;line-height:1.45}
+
+.motivos-checklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:9px;padding:12px;border:1px solid #cfd9e6;border-radius:10px;background:#fff}
+.motivo-check{display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid #e3e9f1;border-radius:9px;background:#f9fbfd;font-size:13px;font-weight:700;color:#33465e;cursor:pointer}
+.motivo-check:hover{background:#f1f6fc}
+.motivo-check input{width:auto;margin:0;flex:0 0 auto}
+
+
+/* ===== UPGRADE VISUAL — PAINEL DE FUNCIONÁRIOS E LÍDERES ===== */
+.func-dashboard-home{padding-top:4px}
+.func-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:34px}
+.func-stat{display:flex;align-items:center;gap:16px;min-height:106px;padding:18px 20px;border-radius:18px;background:#fff;border:1px solid #e4eaf3;box-shadow:0 9px 26px rgba(27,54,93,.07)}
+.func-stat-icon{width:54px;height:54px;display:grid;place-items:center;border-radius:16px;flex:0 0 auto}.func-stat-icon svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.func-stat:nth-child(1) .func-stat-icon{background:#eaf2ff;color:#2868d8}.func-stat:nth-child(2) .func-stat-icon{background:#fff2d8;color:#dc8a00}.func-stat:nth-child(3) .func-stat-icon{background:#e5f8ef;color:#16845b}.func-stat:nth-child(4) .func-stat-icon{background:#eee8ff;color:#7042d6}
+.func-stat .rotulo{font-size:11px;margin-bottom:5px}.func-stat .numero{font-size:31px;line-height:1}
+.func-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;max-width:720px;margin:0 auto 42px}
+.func-menu-card{height:238px;border:1.5px solid #2e67d5;border-radius:20px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;padding:22px;text-align:center;color:#123c82;font-weight:900;font-size:19px;line-height:1.15;box-shadow:0 10px 28px rgba(33,87,213,.06);transition:transform .18s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease}
+.func-menu-card:hover{transform:translateY(-3px);box-shadow:0 15px 34px rgba(33,87,213,.14);background:#fbfdff;border-color:#1746b3}.func-menu-card:active{transform:translateY(-1px)}
+.func-menu-icon{width:78px;height:78px;border-radius:50%;display:grid;place-items:center}.func-menu-icon svg{width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.func-menu-card:nth-child(1) .func-menu-icon{background:#e9f2ff;color:#2868d8}.func-menu-card:nth-child(2) .func-menu-icon{background:#eee8ff;color:#7042d6}.func-menu-arrow{font-size:30px;font-weight:500;line-height:1;margin-top:-3px}
+.func-secao{margin-top:4px}.func-secao-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.func-secao-topo h2{margin:0;font-size:22px;color:#19365e}
+.btn-voltar-func{display:inline-flex;align-items:center;gap:7px;background:#edf3fc;color:#234d87;border:0;border-radius:11px;padding:10px 14px;font-weight:800}.btn-voltar-func:hover{background:#e2ebf8}.func-secao>.card{border-radius:18px;box-shadow:0 9px 26px rgba(27,54,93,.06)}
+#secaoNovaOcorrenciaFunc #areaFormularioOcorrencia{padding-top:4px}
+@media(max-width:900px){.func-stats{grid-template-columns:1fr 1fr}.func-menu-grid{max-width:700px}.func-menu-card{height:210px}}
+@media(max-width:620px){.func-stats{grid-template-columns:1fr}.func-menu-grid{grid-template-columns:1fr;gap:16px}.func-menu-card{height:176px}.func-secao-topo{align-items:flex-start;flex-direction:column}.func-stat{min-height:90px}}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -102,19 +127,24 @@ textarea{min-height:105px;resize:vertical}
   </header>
 
   <main class="container">
-    <section class="grid-cards">
-      <div class="card"><span class="rotulo">Minhas ocorrências</span><div id="qtdTotal" class="numero">0</div></div>
-      <div class="card"><span class="rotulo">Pendentes</span><div id="qtdPendentes" class="numero">0</div></div>
-      <div class="card"><span class="rotulo">Finalizadas</span><div id="qtdFinalizadas" class="numero">0</div></div>
-      <div class="card"><span class="rotulo">Estudantes disponíveis</span><div id="qtdEstudantes" class="numero">0</div></div>
+    <section id="homeFuncionarios" class="func-dashboard-home">
+      <section class="func-stats">
+        <div class="func-stat"><div class="func-stat-icon"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div><span class="rotulo">Minhas ocorrências</span><div id="qtdTotal" class="numero">0</div></div></div>
+        <div class="func-stat"><div class="func-stat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div><span class="rotulo">Pendentes</span><div id="qtdPendentes" class="numero">0</div></div></div>
+        <div class="func-stat"><div class="func-stat-icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div><div><span class="rotulo">Finalizadas</span><div id="qtdFinalizadas" class="numero">0</div></div></div>
+        <div class="func-stat"><div class="func-stat-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div><span class="rotulo">Estudantes disponíveis</span><div id="qtdEstudantes" class="numero">0</div></div></div>
+      </section>
+      <section class="func-menu-grid" aria-label="Acessos rápidos de funcionários e líderes">
+        <button id="menuFazerOcorrenciaFunc" type="button" class="func-menu-card"><span class="func-menu-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15h6"/></svg></span><span>FAZER OCORRÊNCIA</span><span class="func-menu-arrow">›</span></button>
+        <button id="menuMinhasOcorrenciasFunc" type="button" class="func-menu-card"><span class="func-menu-icon"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg></span><span>MINHAS OCORRÊNCIAS</span><span class="func-menu-arrow">›</span></button>
+      </section>
     </section>
 
-    <section class="card">
-      <div class="cabecalho-secao">
-        <h2>Registrar nova ocorrência</h2>
-        <button id="alternarFormularioOcorrencia" type="button" class="btn btn-primario" aria-expanded="false">+ Fazer ocorrência</button>
-      </div>
-      <div id="areaFormularioOcorrencia" class="hidden">
+    <section id="secaoNovaOcorrenciaFunc" class="func-secao hidden">
+      <div class="func-secao-topo"><button type="button" class="btn-voltar-func voltarHomeFunc">← Voltar ao início</button><h2>Registrar nova ocorrência</h2></div>
+      <section class="card">
+        <button id="alternarFormularioOcorrencia" type="button" class="hidden" aria-expanded="false">+ Fazer ocorrência</button>
+        <div id="areaFormularioOcorrencia" class="hidden">
       <div class="busca-linha">
         <input id="buscaEstudante" placeholder="Digite o nome, turma ou RA do estudante">
         <button id="localizarEstudante" type="button" class="btn btn-secundario">Localizar estudante</button>
@@ -123,23 +153,34 @@ textarea{min-height:105px;resize:vertical}
       <div id="statusBuscaEstudante" class="busca-status"></div>
       <form id="formOcorrencia" class="form-grid">
         <div class="campo"><label>Sala / turma</label><select id="turmaOcorrencia" required><option value="">Selecione a sala...</option></select></div>
-        <div class="campo"><label>Aluno</label><select id="aluno" required disabled><option value="">Selecione primeiro a sala...</option></select></div>
-        <div class="campo"><label>Tipo da ocorrência</label>
-          <select id="tipo" required>
-            <option value="">Selecione...</option><option>Indisciplina</option><option>Agressão verbal</option>
-            <option>Agressão física</option><option>Bullying</option><option>Uso indevido de celular</option>
-            <option>Falta recorrente</option><option>Desrespeito</option><option>Outro</option>
-          </select>
+        <div class="campo"><label>Aluno</label><select id="aluno" disabled><option value="">Selecione primeiro a sala...</option></select><small id="dicaColetiva" class="busca-status">Em ocorrência coletiva, escolha a turma e o estudante, clique em “Adicionar estudante à ocorrência” e repita o processo. Você pode trocar de turma sem perder os nomes já adicionados.</small></div>
+        <div class="campo"><label><input id="ocorrenciaColetiva" type="checkbox" style="width:auto;margin-right:8px"> Ocorrência coletiva</label><button id="adicionarAlunoColetiva" type="button" class="btn btn-secundario hidden" style="margin-top:8px">+ Adicionar estudante à ocorrência</button></div>
+        <div id="envolvidosSelecionados" class="campo full hidden"><label>Estudantes envolvidos</label><div id="listaEnvolvidosSelecionados" style="display:flex;gap:8px;flex-wrap:wrap"></div><small class="busca-status">Você pode remover um estudante antes de registrar a ocorrência.</small></div>
+        <div class="campo full"><label>Motivo(s) da ocorrência</label>
+          <div id="tipo" class="motivos-checklist">
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Indisciplina"> Indisciplina</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Agressão verbal"> Agressão verbal</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Agressão física"> Agressão física</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Bullying"> Bullying</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Uso indevido de celular"> Uso indevido de celular</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Falta recorrente"> Falta recorrente</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Desrespeito"> Desrespeito</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Não realizou atividade proposta"> Não realizou atividade proposta</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Outro"> Outro</label>
+</div>
+<small class="busca-status">Marque uma ou mais opções.</small>
         </div>
         <div class="campo full"><label>Descrição do ocorrido</label><textarea id="descricao" required placeholder="Relate objetivamente o que aconteceu."></textarea></div>
         <div class="campo full"><label>Providência inicial tomada</label><textarea id="providenciaProfessor" required placeholder="Ex.: orientação ao estudante, encaminhamento à direção, conversa individual..."></textarea></div>
         <button class="btn btn-primario campo full" type="submit">Registrar e enviar à direção</button>
       </form>
       </div>
+      </section>
     </section>
 
-    <section class="card" style="margin-top:18px">
-      <div class="cabecalho-secao"><h2 id="tituloListaOcorrencias">Minhas ocorrências</h2></div>
+    <section id="secaoListaOcorrenciasFunc" class="func-secao hidden">
+      <div class="func-secao-topo"><button type="button" class="btn-voltar-func voltarHomeFunc">← Voltar ao início</button><h2 id="tituloListaOcorrencias">Minhas ocorrências</h2></div>
+      <section class="card">
       <div class="filtros-grid">
         <div class="campo"><label>Aluno</label><select id="filtroAlunoOcorrencia"><option value="">Todos os alunos</option></select></div>
         <div class="campo"><label>Série / turma</label><select id="filtroSerieOcorrencia"><option value="">Todas as séries</option></select></div>
@@ -148,6 +189,7 @@ textarea{min-height:105px;resize:vertical}
       </div>
       <div id="statusBuscaOcorrencia" class="busca-status" style="margin-top:10px"></div>
       <div id="listaOcorrencias"></div>
+      </section>
     </section>
   </main>
   <footer class="rodape">Criado e desenvolvido por Vania Oliveira</footer>
@@ -213,6 +255,41 @@ let filtroAlunoOcorrencia="";
 let filtroSerieOcorrencia="";
 let filtroDataOcorrencia="";
 let ocorrenciaEmEdicao=null;
+let envolvidosSelecionadosOcorrencia=new Set();
+
+
+function envolvidosOcorrencia(o){
+ const lista=Array.isArray(o.envolvidos)&&o.envolvidos.length?o.envolvidos:null;
+ return lista||[{id:o.alunoId||"",nome:o.alunoNome||"",turma:o.alunoTurma||"",responsavelNome:o.responsavelNome||"",responsavelTelefone:o.responsavelTelefone||""}];
+}
+function motivosOcorrencia(o){
+ if(Array.isArray(o.motivos)&&o.motivos.length)return o.motivos;
+ return o.tipo?[o.tipo]:[];
+}
+function motivosTexto(o){return motivosOcorrencia(o).join(" • ");}
+function nomesEnvolvidos(o){return envolvidosOcorrencia(o).map(a=>a.nome).filter(Boolean).join(", ");}
+function turmasEnvolvidas(o){return [...new Set(envolvidosOcorrencia(o).map(a=>a.turma).filter(Boolean))].join(", ");}
+function ocorrenciaTemAluno(o,nome){return !nome||envolvidosOcorrencia(o).some(a=>a.nome===nome);}
+function ocorrenciaTemTurma(o,turma){return !turma||envolvidosOcorrencia(o).some(a=>a.turma===turma);}
+function chaveAlunoFiltro(a){
+ const id=String((a&&a.id)||"").trim();
+ if(id) return id;
+ return `${String((a&&a.nome)||"").trim()}|||${String((a&&a.turma)||"").trim()}`;
+}
+function ocorrenciaCorrespondeFiltros(o,chaveAluno,turma){
+ const envolvidos=envolvidosOcorrencia(o);
+ if(!chaveAluno && !turma) return true;
+ if(chaveAluno && turma){
+   return envolvidos.some(a=>chaveAlunoFiltro(a)===chaveAluno && String(a.turma||"")===turma);
+ }
+ if(chaveAluno) return envolvidos.some(a=>chaveAlunoFiltro(a)===chaveAluno);
+ return envolvidos.some(a=>String(a.turma||"")===turma);
+}
+function resumoEnvolvidosHtml(o){
+ const lista=envolvidosOcorrencia(o);
+ if(lista.length<=1)return `<div class="detalhe"><strong>Aluno</strong>${esc(lista[0]?.nome||"")} — ${esc(lista[0]?.turma||"")}</div>`;
+ return `<div class="detalhe"><strong>Ocorrência coletiva — envolvidos (${lista.length})</strong>${lista.map(a=>`${esc(a.nome)} — ${esc(a.turma||"")}`).join("<br>")}</div>`;
+}
 
 function normalizarBusca(valor=""){
  return String(valor).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
@@ -313,13 +390,22 @@ function iniciarTempoReal(){
 $("#formOcorrencia").addEventListener("submit",async e=>{
  e.preventDefault();
  const sala=$("#turmaOcorrencia").value;
- const aluno=estudantes.find(a=>a.id===$("#aluno").value && String(a.turma||"").trim()===sala);
+ const coletiva=$("#ocorrenciaColetiva").checked;
+ const idsSelecionados=coletiva ? [...new Set([...envolvidosSelecionadosOcorrencia, $("#aluno").value].filter(Boolean))] : [$("#aluno").value].filter(Boolean);
+ const envolvidos=estudantes.filter(a=>idsSelecionados.includes(a.id));
+ const motivos=[...document.querySelectorAll('#tipo input[name="motivoOcorrencia"]:checked')].map(el=>el.value);
  if(!sala){toast("Selecione a sala.");return;}
- if(!aluno){toast("Selecione um estudante da sala escolhida.");return;}
+ if(!envolvidos.length){toast("Selecione pelo menos um estudante.");return;}
+ if(coletiva && envolvidos.length<2){toast("Para uma ocorrência coletiva, selecione pelo menos dois estudantes.");return;}
+ if(!coletiva && envolvidos.length!==1){toast("Para ocorrência individual, selecione apenas um estudante.");return;}
+ if(!motivos.length){toast("Selecione pelo menos um motivo.");return;}
+ const aluno=envolvidos[0];
  const dadosFormulario={
    alunoId:aluno.id,alunoNome:aluno.nome,alunoTurma:aluno.turma||"",
    responsavelNome:aluno.responsavel||"",responsavelTelefone:aluno.contato||"",
-   tipo:$("#tipo").value,descricao:$("#descricao").value.trim(),
+   coletiva:coletiva,
+   envolvidos:envolvidos.map(a=>({id:a.id,nome:a.nome,turma:a.turma||"",responsavelNome:a.responsavel||"",responsavelTelefone:a.contato||""})),
+   motivos, tipo:motivos.join(" | "),descricao:$("#descricao").value.trim(),
    providenciaProfessor:$("#providenciaProfessor").value.trim(),
    providencia:$("#providenciaProfessor").value.trim()
  };
@@ -347,6 +433,10 @@ $("#formOcorrencia").addEventListener("submit",async e=>{
    }
    ocorrenciaEmEdicao=null;
    e.target.reset();
+   $("#ocorrenciaColetiva").checked=false;
+   envolvidosSelecionadosOcorrencia.clear();
+   renderEnvolvidosSelecionados();
+   $("#aluno").multiple=false;
    $("#aluno").disabled=true;
    $("#aluno").innerHTML='<option value="">Selecione primeiro a sala...</option>';
    $("#areaFormularioOcorrencia").classList.add("hidden");
@@ -381,6 +471,8 @@ function atualizarListaEstudantes(){
  }
 
  $("#aluno").disabled=!sala;
+ $("#aluno").multiple=false;
+ $("#aluno").size=1;
  $("#aluno").innerHTML=!sala
    ? '<option value="">Selecione primeiro a sala...</option>'
    : '<option value="">Selecione o estudante...</option>'+lista.map(a=>`<option value="${a.id}">${esc(a.nome)} — RA ${esc(a.ra||"")}${a.digito?`-${esc(a.digito)}`:""}</option>`).join("");
@@ -389,12 +481,70 @@ function atualizarListaEstudantes(){
    : (termo ? `${lista.length} estudante(s) localizado(s) nessa sala.` : `${lista.length} estudante(s) nessa sala.`);
 }
 
+
+function renderEnvolvidosSelecionados(){
+ const coletiva=$("#ocorrenciaColetiva")?.checked===true;
+ const area=$("#envolvidosSelecionados");
+ const lista=$("#listaEnvolvidosSelecionados");
+ const botao=$("#adicionarAlunoColetiva");
+ if(botao) botao.classList.toggle("hidden",!coletiva);
+ if(!area||!lista)return;
+ area.classList.toggle("hidden",!coletiva);
+ const envolvidos=[...envolvidosSelecionadosOcorrencia].map(id=>estudantes.find(a=>a.id===id)).filter(Boolean);
+ lista.innerHTML=envolvidos.length ? envolvidos.map(a=>`<span class="badge em-analise" style="display:inline-flex;align-items:center;gap:6px">${esc(a.nome)} — ${esc(a.turma||"")} <button type="button" class="remover-envolvido" data-id="${esc(a.id)}" style="border:0;background:transparent;cursor:pointer;font-weight:900" title="Remover">×</button></span>`).join("") : '<span class="busca-status">Nenhum estudante adicionado ainda.</span>';
+ lista.querySelectorAll(".remover-envolvido").forEach(btn=>btn.addEventListener("click",()=>{ envolvidosSelecionadosOcorrencia.delete(btn.dataset.id); renderEnvolvidosSelecionados(); }));
+}
+
+$("#adicionarAlunoColetiva").addEventListener("click",()=>{
+ const select=$("#aluno");
+ const id=select.value;
+ if(!id){toast("Selecione um estudante antes de adicionar outro.");return;}
+ const aluno=estudantes.find(a=>a.id===id);
+ envolvidosSelecionadosOcorrencia.add(id);
+ renderEnvolvidosSelecionados();
+ // O aluno fica confirmado na lista de envolvidos; o seletor volta ao estado inicial
+ // para deixar claro que o próximo estudante ainda precisa ser escolhido.
+ select.value="";
+ if(aluno) toast(`${aluno.nome} foi adicionado à ocorrência coletiva. Você pode trocar de turma e escolher o próximo estudante.`);
+});
+
+$("#ocorrenciaColetiva").addEventListener("change",()=>{
+ if($("#ocorrenciaColetiva").checked){
+   const atual=$("#aluno").value;
+   if(atual) envolvidosSelecionadosOcorrencia.add(atual);
+ }else{
+   const primeiro=[...envolvidosSelecionadosOcorrencia][0]||$("#aluno").value;
+   envolvidosSelecionadosOcorrencia.clear();
+   if(primeiro) $("#aluno").value=primeiro;
+ }
+ renderEnvolvidosSelecionados();
+});
+
 $("#turmaOcorrencia").addEventListener("change",()=>{
+ // Na ocorrência coletiva, confirma automaticamente o aluno que estava selecionado
+ // antes de carregar outra turma. Assim ele nunca se perde ao trocar de sala.
+ if($("#ocorrenciaColetiva").checked){
+   const alunoAnterior=$("#aluno").value;
+   if(alunoAnterior) envolvidosSelecionadosOcorrencia.add(alunoAnterior);
+ }else{
+   envolvidosSelecionadosOcorrencia.clear();
+ }
+ renderEnvolvidosSelecionados();
  filtroEstudante="";
  $("#buscaEstudante").value="";
  $("#limparBuscaEstudante").classList.add("hidden");
  atualizarListaEstudantes();
 });
+
+// Navegação do painel inicial de funcionários e líderes
+function mostrarAreaFuncionarios(area){
+ const home=$("#homeFuncionarios"), nova=$("#secaoNovaOcorrenciaFunc"), lista=$("#secaoListaOcorrenciasFunc");
+ home.classList.toggle("hidden",area!=="home"); nova.classList.toggle("hidden",area!=="nova"); lista.classList.toggle("hidden",area!=="lista");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+$("#menuFazerOcorrenciaFunc").addEventListener("click",()=>{mostrarAreaFuncionarios("nova"); if($("#areaFormularioOcorrencia").classList.contains("hidden")) $("#alternarFormularioOcorrencia").click();});
+$("#menuMinhasOcorrenciasFunc").addEventListener("click",()=>mostrarAreaFuncionarios("lista"));
+document.querySelectorAll(".voltarHomeFunc").forEach(btn=>btn.addEventListener("click",()=>mostrarAreaFuncionarios("home")));
 
 $("#alternarFormularioOcorrencia").addEventListener("click",()=>{
  const area=$("#areaFormularioOcorrencia");
@@ -433,11 +583,17 @@ function atualizarOpcoesFiltrosOcorrencia(){
  const alunoAtual=$("#filtroAlunoOcorrencia").value;
  const serieAtual=$("#filtroSerieOcorrencia").value;
  const minhasOcorrencias=ocorrencias.filter(o=>o.professorId===usuarioAtual?.uid);
- const alunos=[...new Set(minhasOcorrencias.map(o=>o.alunoNome).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
- const series=[...new Set(minhasOcorrencias.map(o=>o.alunoTurma).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
- $("#filtroAlunoOcorrencia").innerHTML='<option value="">Todos os alunos</option>'+alunos.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
- $("#filtroSerieOcorrencia").innerHTML='<option value="">Todas as séries</option>'+series.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
- $("#filtroAlunoOcorrencia").value=alunos.includes(alunoAtual)?alunoAtual:"";
+ const mapaAlunos=new Map();
+ minhasOcorrencias.forEach(o=>envolvidosOcorrencia(o).forEach(a=>{
+   if(!a.nome)return;
+   const chave=chaveAlunoFiltro(a);
+   if(!mapaAlunos.has(chave)) mapaAlunos.set(chave,{chave,nome:a.nome,turma:a.turma||""});
+ }));
+ const alunos=[...mapaAlunos.values()].sort((a,b)=>a.nome.localeCompare(b.nome,"pt-BR")||a.turma.localeCompare(b.turma,"pt-BR",{numeric:true}));
+ const series=[...new Set(minhasOcorrencias.flatMap(o=>envolvidosOcorrencia(o).map(a=>a.turma)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR",{numeric:true}));
+ $("#filtroAlunoOcorrencia").innerHTML='<option value="">Todos os alunos</option>'+alunos.map(a=>`<option value="${esc(a.chave)}">${esc(a.nome)}${a.turma?` — ${esc(a.turma)}`:""}</option>`).join("");
+ $("#filtroSerieOcorrencia").innerHTML='<option value="">Todas as turmas</option>'+series.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+ $("#filtroAlunoOcorrencia").value=alunos.some(a=>a.chave===alunoAtual)?alunoAtual:"";
  $("#filtroSerieOcorrencia").value=series.includes(serieAtual)?serieAtual:"";
 }
 function aplicarFiltrosOcorrencia(){
@@ -491,17 +647,16 @@ function render(){
  atualizarOpcoesFiltrosOcorrencia();
  const minhasOcorrencias=ocorrencias.filter(o=>o.professorId===usuarioAtual?.uid);
  const ocorrenciasFiltradas=minhasOcorrencias.filter(o=>
-   (!filtroAlunoOcorrencia || o.alunoNome===filtroAlunoOcorrencia) &&
-   (!filtroSerieOcorrencia || o.alunoTurma===filtroSerieOcorrencia) &&
+   ocorrenciaCorrespondeFiltros(o,filtroAlunoOcorrencia,filtroSerieOcorrencia) &&
    (!filtroDataOcorrencia || dataISO(o.criadaEm)===filtroDataOcorrencia)
  );
  const pendMinhas=minhasOcorrencias.filter(o=>o.status!=="Finalizada"),finMinhas=minhasOcorrencias.filter(o=>o.status==="Finalizada");
  $("#qtdTotal").textContent=minhasOcorrencias.length;$("#qtdPendentes").textContent=pendMinhas.length;
  $("#qtdFinalizadas").textContent=finMinhas.length;$("#qtdEstudantes").textContent=estudantes.length;
- $("#listaOcorrencias").innerHTML=ocorrenciasFiltradas.length?`<div class="tabela-wrap"><table><thead><tr><th>Aluno</th><th>Registrada por</th><th>Tipo</th><th>Enviada</th><th>Status</th><th></th></tr></thead><tbody>${ocorrenciasFiltradas.map(o=>`<tr>
- <td><strong>${esc(o.alunoNome)}</strong><br><small>${esc(o.alunoTurma||"")}</small></td>
+ $("#listaOcorrencias").innerHTML=ocorrenciasFiltradas.length?`<div class="tabela-wrap"><table><thead><tr><th>Aluno</th><th>Registrada por</th><th>Motivo(s)</th><th>Enviada</th><th>Status</th><th></th></tr></thead><tbody>${ocorrenciasFiltradas.map(o=>`<tr>
+ <td><strong>${esc(nomesEnvolvidos(o))}</strong>${envolvidosOcorrencia(o).length>1?`<br><small>Ocorrência coletiva (${envolvidosOcorrencia(o).length} envolvidos)</small>`:`<br><small>${esc(o.alunoTurma||"")}</small>`}</td>
  <td>${esc(o.professorNome||o.professor||"Não informado")}</td>
- <td>${esc(o.tipo||"")}</td><td>${dataBR(o.criadaEm)}</td>
+ <td>${esc(motivosTexto(o))}</td><td>${dataBR(o.criadaEm)}</td>
  <td><span class="badge ${classeStatus(o.status)}">${esc(o.status||"Pendente")}</span></td>
  <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver detalhes</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button><button class="btn btn-secundario" data-pdf="${o.id}">Baixar PDF</button>${o.professorId===usuarioAtual?.uid && o.abertaPelaDirecao!==true ? `<button class="btn btn-secundario" data-editar="${o.id}">Editar</button><button class="btn btn-perigo" data-excluir="${o.id}">Excluir</button>` : ""}</div></td></tr>`).join("")}</tbody></table></div>`:'<div class="vazio">Nenhuma ocorrência encontrada.</div>';
  const filtrosAtivos=[filtroAlunoOcorrencia,filtroSerieOcorrencia,filtroDataOcorrencia].filter(Boolean).length;
@@ -515,6 +670,7 @@ function render(){
 
 
 function editarOcorrencia(id){
+ mostrarAreaFuncionarios("nova");
  const o=ocorrencias.find(x=>x.id===id);
  if(!o || o.professorId!==usuarioAtual?.uid)return;
  if(o.abertaPelaDirecao===true){toast("A direção já abriu esta ocorrência. Ela não pode mais ser editada.");return;}
@@ -524,8 +680,13 @@ function editarOcorrencia(id){
  $("#alternarFormularioOcorrencia").setAttribute("aria-expanded","true");
  $("#turmaOcorrencia").value=String(o.alunoTurma||"").trim();
  atualizarListaEstudantes();
- $("#aluno").value=o.alunoId||"";
- $("#tipo").value=o.tipo||"";
+ $("#ocorrenciaColetiva").checked=envolvidosOcorrencia(o).length>1||o.coletiva===true;
+ atualizarListaEstudantes();
+ envolvidosSelecionadosOcorrencia=new Set(envolvidosOcorrencia(o).map(a=>a.id).filter(Boolean));
+ renderEnvolvidosSelecionados();
+ if(!$("#ocorrenciaColetiva").checked){ $("#aluno").value=[...envolvidosSelecionadosOcorrencia][0]||""; envolvidosSelecionadosOcorrencia.clear(); }
+ const motivos=new Set(motivosOcorrencia(o));
+ [...document.querySelectorAll('#tipo input[name="motivoOcorrencia"]')].forEach(el=>el.checked=motivos.has(el.value));
  $("#descricao").value=o.descricao||"";
  $("#providenciaProfessor").value=o.providenciaProfessor||o.providencia||"";
  $("#areaFormularioOcorrencia").scrollIntoView({behavior:"smooth",block:"start"});
@@ -593,12 +754,12 @@ async function baixarPdfOcorrencia(id){
       <h1 style="font-size:22px;margin:0 0 6px">REGISTRO DE OCORRÊNCIA ESCOLAR</h1>
       <div style="color:#555">E. E. Prof. Dr. Moacyr Miranda Pinto<br>Sistema de Ocorrências Escolares</div>
     </div>
-    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Aluno:</strong>${esc(o.alunoNome)}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Aluno(s):</strong>${esc(nomesEnvolvidos(o))}</div>
     <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Turma:</strong>${esc(o.alunoTurma||"")}</div>
     <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Responsável:</strong>${esc(responsavel.nome)}</div>
     <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Telefone do responsável:</strong>${esc(responsavel.telefone)}</div>
     <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Registrada por:</strong>${esc(o.professorNome||o.professor||"")}</div>
-    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Tipo:</strong>${esc(o.tipo||"")}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Motivo(s):</strong>${esc(motivosTexto(o))}</div>
     <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Registrada em:</strong>${dataBR(o.criadaEm)}</div>
     <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Status:</strong>${esc(o.status||"Pendente")}</div>
     <div style="border:1px solid #bbb;border-radius:8px;padding:13px;margin-top:15px"><strong style="display:block;margin-bottom:7px">Descrição do ocorrido</strong>${esc(o.descricao||"")}</div>
@@ -662,12 +823,12 @@ function imprimirOcorrencia(id){
    <body>
      <h1>REGISTRO DE OCORRÊNCIA ESCOLAR</h1>
      <div class="sub">E. E. Prof. Dr. Moacyr Miranda Pinto<br>Sistema de Ocorrências Escolares</div>
-     <div class="linha"><strong>Aluno:</strong>${esc(o.alunoNome)}</div>
+     <div class="linha"><strong>Aluno(s):</strong>${esc(nomesEnvolvidos(o))}</div>
      <div class="linha"><strong>Turma:</strong>${esc(o.alunoTurma||"")}</div>
      <div class="linha"><strong>Responsável:</strong>${esc(responsavel.nome)}</div>
      <div class="linha"><strong>Telefone do responsável:</strong>${esc(responsavel.telefone)}</div>
      <div class="linha"><strong>Registrada por:</strong>${esc(o.professorNome||o.professor||"")}</div>
-     <div class="linha"><strong>Tipo:</strong>${esc(o.tipo||"")}</div>
+     <div class="linha"><strong>Motivo(s):</strong>${esc(motivosTexto(o))}</div>
      <div class="linha"><strong>Registrada em:</strong>${dataBR(o.criadaEm)}</div>
      <div class="linha"><strong>Status:</strong><span class="status">${esc(o.status||"Pendente")}</span></div>
      <div class="bloco"><strong>Descrição do ocorrido</strong>${esc(o.descricao||"")}</div>
@@ -692,10 +853,10 @@ function abrir(id){
  const o=ocorrencias.find(x=>x.id===id);
  const responsavel=dadosResponsavelDaOcorrencia(o);
  $("#detalhesOcorrencia").innerHTML=`
- <div class="detalhe"><strong>Aluno</strong>${esc(o.alunoNome)} — ${esc(o.alunoTurma||"")}</div>
+ ${resumoEnvolvidosHtml(o)}
  <div class="detalhe"><strong>Responsável</strong>${esc(responsavel.nome)}</div>
  <div class="detalhe"><strong>Telefone do responsável</strong>${esc(responsavel.telefone)}</div>
- <div class="detalhe"><strong>Tipo</strong>${esc(o.tipo||"")}</div>
+ <div class="detalhe"><strong>Motivo(s)</strong>${esc(motivosTexto(o))}</div>
  <div class="detalhe"><strong>Descrição</strong>${esc(o.descricao||"")}</div>
  <div class="detalhe"><strong>Providência inicial</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
  <div class="detalhe"><strong>Status</strong>${esc(o.status||"Pendente")}</div>

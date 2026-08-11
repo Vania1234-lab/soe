@@ -115,6 +115,110 @@ body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animat
 @keyframes pulsarAlerta{from{transform:translateX(-50%) scale(1);filter:brightness(1)}to{transform:translateX(-50%) scale(1.04);filter:brightness(1.18)}}
 @keyframes piscarCard{from{box-shadow:0 0 0 0 rgba(195,62,77,.12)}to{box-shadow:0 0 0 8px rgba(195,62,77,.24)}}
 
+
+.motivos-checklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:9px;padding:12px;border:1px solid #cfd9e6;border-radius:10px;background:#fff}
+.motivo-check{display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid #e3e9f1;border-radius:9px;background:#f9fbfd;font-size:13px;font-weight:700;color:#33465e;cursor:pointer}
+.motivo-check:hover{background:#f1f6fc}
+.motivo-check input{width:auto;margin:0;flex:0 0 auto}
+
+
+
+/* ===== Alerta visual de nova ocorrência ===== */
+.btn-alerta-ocorrencia{
+  display:none;
+  border:0;
+  border-radius:12px;
+  padding:11px 15px;
+  font-weight:900;
+  background:#b4232f;
+  color:#fff;
+  box-shadow:0 0 0 0 rgba(180,35,47,.45);
+}
+.btn-alerta-ocorrencia.alerta-ativo{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  animation:piscarBotaoAlerta .72s infinite alternate;
+}
+.menu-card[data-view="ocorrencias"].alerta-ativo{
+  border-color:#d92638;
+  color:#a41120;
+  background:#fff5f6;
+  animation:piscarMenuOcorrencias .72s infinite alternate;
+}
+.menu-card[data-view="ocorrencias"].alerta-ativo .menu-icone{
+  background:#ffe0e4;
+  color:#c61d2d;
+}
+@keyframes piscarBotaoAlerta{
+  from{transform:scale(1);filter:brightness(1);box-shadow:0 0 0 0 rgba(180,35,47,.25)}
+  to{transform:scale(1.04);filter:brightness(1.18);box-shadow:0 0 0 8px rgba(180,35,47,.18)}
+}
+@keyframes piscarMenuOcorrencias{
+  from{transform:translateY(0) scale(1);box-shadow:0 10px 28px rgba(180,35,47,.12)}
+  to{transform:translateY(-3px) scale(1.025);box-shadow:0 0 0 8px rgba(217,38,56,.16),0 16px 34px rgba(180,35,47,.20)}
+}
+
+/* ===== Menu inicial do painel do diretor ===== */
+.menu-diretor{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(220px,1fr));
+  gap:28px 36px;
+  max-width:980px;
+  margin:34px auto 18px;
+  align-items:stretch;
+}
+.menu-diretor .menu-card{
+  height:230px;
+  min-height:230px;
+  width:100%;
+  background:#fff;
+  border:1.5px solid #2157d5;
+  border-radius:18px;
+  padding:26px 22px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  text-align:center;
+  color:#103d92;
+  font-weight:900;
+  font-size:20px;
+  line-height:1.15;
+  box-shadow:0 10px 28px rgba(31,74,151,.07);
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.menu-diretor .menu-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 34px rgba(31,74,151,.14);
+  border-color:#1746b3;
+}
+.menu-diretor .menu-card:nth-child(4){grid-column:1 / 2;margin-left:0}
+.menu-diretor .menu-card:nth-child(5){grid-column:2 / 3;margin-left:0}
+.menu-icone{
+  width:82px;height:82px;border-radius:50%;display:grid;place-items:center;
+  font-size:38px;background:#edf4ff;color:#2157d5;
+}
+.menu-card[data-view="usuarios"] .menu-icone{background:#f1eaff;color:#7a42d8}
+.menu-card[data-view="estudantes"] .menu-icone{background:#e7f8ef;color:#14945d}
+.menu-card[data-view="nova"] .menu-icone{background:#fff2d9;color:#f39a0a}
+.menu-card[data-view="finalizadas"] .menu-icone{background:#e6f7f8;color:#0e9faa}
+.menu-seta{font-size:34px;font-weight:400;line-height:1;margin-top:2px}
+.barra-navegacao-interna{
+  display:flex;align-items:center;gap:14px;margin:22px 0 18px;
+}
+.barra-navegacao-interna strong{font-size:20px;color:#18385f}
+.secao-diretor-oculta{display:none!important}
+@media(max-width:900px){
+  .menu-diretor{grid-template-columns:1fr 1fr;gap:18px}
+  .menu-diretor .menu-card:nth-child(4),.menu-diretor .menu-card:nth-child(5){grid-column:auto;margin-left:0}
+}
+@media(max-width:620px){
+  .menu-diretor{grid-template-columns:1fr;margin-top:22px}
+  .menu-diretor .menu-card{height:190px;min-height:190px}
+}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -140,6 +244,7 @@ body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animat
 <header class="topo">
 <div class="marca"><div class="logo"><img alt="Brasão oficial da escola" src="data:image/jpeg;base64,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"/></div><div><h1>Painel do Diretor</h1><div class="nome-escola">E. E. Prof. Dr. Moacyr Miranda Pinto</div><p>Sistema de Ocorrências Escolares</p></div></div>
 <div class="usuario">
+<button class="btn-alerta-ocorrencia" id="alertaNovaOcorrencia" type="button" aria-live="assertive">🚨 NOVA OCORRÊNCIA</button>
 <button class="btn btn-som" id="ativarSom" type="button">🔔 Ativar som</button>
 <div><strong id="nomeUsuario">Diretor</strong><small id="emailUsuario"></small></div>
 <button class="btn btn-secundario" id="sair">Sair</button>
@@ -152,11 +257,33 @@ body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animat
 <div class="card"><span class="rotulo">Pendentes</span><div class="numero" id="qtdPendentes">0</div></div>
 <div class="card"><span class="rotulo">Finalizadas</span><div class="numero" id="qtdFinalizadas">0</div></div>
 <div class="card"><span class="rotulo">Total</span><div class="numero" id="qtdTotal">0</div></div>
-</section><section class="card" style="margin-top:18px">
+</section>
+<section id="menuInicialDiretor" class="menu-diretor" aria-label="Menu principal do painel do diretor">
+  <button class="menu-card" type="button" data-view="ocorrencias">
+    <span class="menu-icone">📋</span><span>OCORRÊNCIAS</span><span class="menu-seta">›</span>
+  </button>
+  <button class="menu-card" type="button" data-view="usuarios">
+    <span class="menu-icone">👤</span><span>CADASTRAR<br>USUÁRIO</span><span class="menu-seta">›</span>
+  </button>
+  <button class="menu-card" type="button" data-view="estudantes">
+    <span class="menu-icone">👥</span><span>CADASTRAR ESTUDANTES /<br>ESTUDANTES CADASTRADOS</span><span class="menu-seta">›</span>
+  </button>
+  <button class="menu-card" type="button" data-view="nova">
+    <span class="menu-icone">📝</span><span>NOVA<br>OCORRÊNCIA</span><span class="menu-seta">›</span>
+  </button>
+  <button class="menu-card" type="button" data-view="finalizadas">
+    <span class="menu-icone">📁</span><span>OCORRÊNCIAS<br>FINALIZADAS</span><span class="menu-seta">›</span>
+  </button>
+</section>
+<div id="barraNavegacaoInterna" class="barra-navegacao-interna hidden">
+  <button id="voltarInicioDiretor" class="btn btn-secundario" type="button">← Voltar ao início</button>
+  <strong id="tituloSecaoDiretor"></strong>
+</div>
+<section id="secaoPendentes" class="card secao-diretor-oculta" style="margin-top:18px">
 <div class="cabecalho-secao"><h2>🔔 Ocorrências que exigem atenção</h2><span class="badge pendente" id="resumoPendentesTopo">0 aguardando atendimento</span></div><div class="busca-status" id="textoPendentesTopo">As ocorrências mais recentes aparecem primeiro.</div>
 <div id="listaPendentes"></div>
 </section>
-<section class="card" style="margin-bottom:18px">
+<section id="secaoUsuarios" class="card secao-diretor-oculta" style="margin-bottom:18px">
 <div class="cabecalho-secao">
 <h2>Cadastrar usuário <span style="font-size:14px;color:var(--muted);font-weight:700">(Professores, Funcionários ou Líderes de Clube)</span></h2>
 </div>
@@ -178,7 +305,7 @@ body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animat
 <div class="hidden" id="listaProfessores"></div>
 </div>
 </section>
-<section class="duas-colunas">
+<section id="secaoEstudantes" class="duas-colunas secao-diretor-oculta">
 <div class="card">
 <div class="cabecalho-secao"><h2>Cadastrar estudante</h2></div>
 <form class="form-grid" id="formEstudante">
@@ -226,7 +353,7 @@ body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animat
 <div class="vazio" id="resumoListaFechada">A lista está recolhida para manter o painel organizado. Clique em “Mostrar lista”.</div>
 </div>
 </section>
-<section class="card" style="margin-top:18px">
+<section id="secaoNovaOcorrencia" class="card secao-diretor-oculta" style="margin-top:18px">
 <div class="cabecalho-secao">
 <h2>Registrar nova ocorrência</h2>
 <button aria-expanded="false" class="btn btn-primario" id="alternarFormularioOcorrenciaDiretor" type="button">+ Fazer ocorrência</button>
@@ -234,13 +361,22 @@ body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animat
 <div class="hidden" id="areaFormularioOcorrenciaDiretor">
 <form class="form-grid" id="formOcorrenciaDiretor">
 <div class="campo"><label>Turma</label><select id="turmaOcorrenciaDiretor" required=""><option value="">Selecione a turma...</option></select></div>
-<div class="campo"><label>Aluno</label><select disabled="" id="alunoOcorrenciaDiretor" required=""><option value="">Selecione primeiro a turma...</option></select></div>
-<div class="campo"><label>Tipo da ocorrência</label>
-<select id="tipoOcorrenciaDiretor" required="">
-<option value="">Selecione...</option><option>Indisciplina</option><option>Agressão verbal</option>
-<option>Agressão física</option><option>Bullying</option><option>Uso indevido de celular</option>
-<option>Falta recorrente</option><option>Desrespeito</option><option>Outro</option>
-</select>
+<div class="campo"><label>Aluno</label><select disabled="" id="alunoOcorrenciaDiretor"><option value="">Selecione primeiro a turma...</option></select><small class="busca-status">Em ocorrência coletiva, adicione um estudante, troque de turma se necessário e continue adicionando os demais.</small></div>
+<div class="campo"><label><input id="ocorrenciaColetivaDiretor" type="checkbox" style="width:auto;margin-right:8px"> Ocorrência coletiva</label><button id="adicionarAlunoColetivaDiretor" type="button" class="btn btn-secundario hidden" style="margin-top:8px">+ Adicionar estudante à ocorrência</button></div>
+<div id="envolvidosSelecionadosDiretor" class="campo full hidden"><label>Estudantes envolvidos</label><div id="listaEnvolvidosSelecionadosDiretor" style="display:flex;gap:8px;flex-wrap:wrap"></div><small class="busca-status">Você pode remover um estudante antes de registrar a ocorrência.</small></div>
+<div class="campo full"><label>Motivo(s) da ocorrência</label>
+<div id="tipoOcorrenciaDiretor" class="motivos-checklist">
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Indisciplina"> Indisciplina</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Agressão verbal"> Agressão verbal</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Agressão física"> Agressão física</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Bullying"> Bullying</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Uso indevido de celular"> Uso indevido de celular</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Falta recorrente"> Falta recorrente</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Desrespeito"> Desrespeito</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Não realizou atividade proposta"> Não realizou atividade proposta</label>
+<label class="motivo-check"><input type="checkbox" name="motivoOcorrencia" value="Outro"> Outro</label>
+</div>
+<small class="busca-status">Marque uma ou mais opções.</small>
 </div>
 <div class="campo"><label>Status inicial</label><select id="statusOcorrenciaDiretor"><option value="Pendente">Pendente</option></select></div>
 <div class="campo full"><label>Descrição do ocorrido</label><textarea id="descricaoOcorrenciaDiretor" placeholder="Relate objetivamente o que aconteceu." required=""></textarea></div>
@@ -249,7 +385,7 @@ body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animat
 </form>
 </div>
 </section>
-<section class="card" style="margin-top:18px">
+<section id="secaoFiltros" class="card secao-diretor-oculta" style="margin-top:18px">
 <div class="cabecalho-secao"><h2>Filtrar ocorrências</h2></div>
 <div class="filtros-grid">
 <div class="campo"><label>Aluno</label><select id="filtroAlunoOcorrencia"><option value="">Todos os alunos</option></select></div>
@@ -260,7 +396,7 @@ body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animat
 <div class="busca-status" id="statusBuscaOcorrencia" style="margin-top:10px"></div>
 </section>
 
-<section class="card" style="margin-top:18px">
+<section id="secaoFinalizadas" class="card secao-diretor-oculta" style="margin-top:18px">
 <div class="cabecalho-secao">
 <div>
 <h2>Ocorrências finalizadas</h2>
@@ -270,7 +406,7 @@ body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animat
 </div>
 <div class="hidden" id="listaFinalizadas"></div>
 </section>
-<section class="card" style="margin-top:18px">
+<section id="secaoLixeira" class="card secao-diretor-oculta" style="margin-top:18px">
 <div class="cabecalho-secao">
 <div><h2>🗑️ Lixeira</h2><span class="busca-status" id="resumoLixeira">0 itens</span></div>
 <button aria-expanded="false" class="btn btn-secundario" id="alternarLixeira" type="button">Mostrar lixeira</button>
@@ -399,6 +535,7 @@ let ocorrencias = [];
 let estudantes = [];
 let professores = [];
 let ocorrenciaSelecionada = null;
+let envolvidosSelecionadosDiretor = new Set();
 let primeiraCarga = true;
 let tempoRealIniciado = false;
 let estudantesParaImportar = [];
@@ -435,11 +572,22 @@ function removerBannerAlerta(){
   if(bannerAlerta){bannerAlerta.remove();bannerAlerta=null;}
 }
 
+function atualizarAlertaVisual(ativo, alunoNome=""){
+  const btnTopo=document.getElementById("alertaNovaOcorrencia");
+  const btnOcorrencias=document.querySelector('#menuInicialDiretor .menu-card[data-view="ocorrencias"]');
+  if(btnTopo){
+    btnTopo.classList.toggle("alerta-ativo",ativo);
+    btnTopo.textContent=ativo ? `🚨 NOVA OCORRÊNCIA${alunoNome ? " — "+alunoNome : ""}` : "🚨 NOVA OCORRÊNCIA";
+  }
+  btnOcorrencias?.classList.toggle("alerta-ativo",ativo);
+}
+
 function pararAlertaCompleto(){
   alertaSonoroAtivo=false;
   if(intervaloRepeticaoAlerta){clearInterval(intervaloRepeticaoAlerta);intervaloRepeticaoAlerta=null;}
   removerBannerAlerta();
   document.body.classList.remove("alerta-ocorrencia-ativo");
+  atualizarAlertaVisual(false);
   pararPiscarAba();
 }
 
@@ -455,7 +603,7 @@ function mostrarBannerAlerta(alunoNome=""){
 function iniciarAlertaCompleto(alunoNome=""){
   pararAlertaCompleto();
   alertaSonoroAtivo=true;
-  mostrarBannerAlerta(alunoNome);
+  atualizarAlertaVisual(true,alunoNome);
   document.body.classList.add("alerta-ocorrencia-ativo");
   iniciarPiscarAba(alunoNome);
   tocarAvisoSonoro();
@@ -463,10 +611,6 @@ function iniciarAlertaCompleto(alunoNome=""){
     if(alertaSonoroAtivo) tocarAvisoSonoro();
   },20000);
 }
-
-// Qualquer interação do diretor confirma que o alerta foi percebido.
-document.addEventListener("pointerdown",pararAlertaCompleto,{capture:true});
-document.addEventListener("keydown",pararAlertaCompleto,{capture:true});
 
 function configurarMostrarSenha(botaoId,inputId){
   $(botaoId).addEventListener("click",()=>{
@@ -492,6 +636,35 @@ $("#alternarListaFinalizadas").addEventListener("click",()=>{
   $("#alternarListaFinalizadas").textContent=estaOculta ? "Mostrar histórico" : "Ocultar histórico";
   $("#alternarListaFinalizadas").setAttribute("aria-expanded",String(!estaOculta));
 });
+
+
+function envolvidosOcorrencia(o){
+ const lista=Array.isArray(o.envolvidos)&&o.envolvidos.length?o.envolvidos:null;
+ return lista||[{id:o.alunoId||"",nome:o.alunoNome||"",turma:o.alunoTurma||"",responsavelNome:o.responsavelNome||"",responsavelTelefone:o.responsavelTelefone||""}];
+}
+function motivosOcorrencia(o){
+ if(Array.isArray(o.motivos)&&o.motivos.length)return o.motivos;
+ return o.tipo?[o.tipo]:[];
+}
+function motivosTexto(o){return motivosOcorrencia(o).join(" • ");}
+function nomesEnvolvidos(o){return envolvidosOcorrencia(o).map(a=>a.nome).filter(Boolean).join(", ");}
+function turmasEnvolvidas(o){return [...new Set(envolvidosOcorrencia(o).map(a=>a.turma).filter(Boolean))].join(", ");}
+function ocorrenciaTemAluno(o,nome){return !nome||envolvidosOcorrencia(o).some(a=>a.nome===nome);}
+function ocorrenciaTemTurma(o,turma){return !turma||envolvidosOcorrencia(o).some(a=>a.turma===turma);}
+function ocorrenciaCorrespondeFiltros(o,nome,turma){
+ const envolvidos=envolvidosOcorrencia(o);
+ if(nome && turma){
+   return envolvidos.some(a=>String(a.nome||"")===nome && String(a.turma||"")===turma);
+ }
+ if(nome) return envolvidos.some(a=>String(a.nome||"")===nome);
+ if(turma) return envolvidos.some(a=>String(a.turma||"")===turma);
+ return true;
+}
+function resumoEnvolvidosHtml(o){
+ const lista=envolvidosOcorrencia(o);
+ if(lista.length<=1)return `<div class="detalhe"><strong>Aluno</strong>${esc(lista[0]?.nome||"")} — ${esc(lista[0]?.turma||"")}</div>`;
+ return `<div class="detalhe"><strong>Ocorrência coletiva — envolvidos (${lista.length})</strong>${lista.map(a=>`${esc(a.nome)} — ${esc(a.turma||"")}`).join("<br>")}</div>`;
+}
 
 function normalizarBusca(valor=""){
   return String(valor)
@@ -1035,7 +1208,52 @@ function atualizarAlunosOcorrenciaDiretor(){
 }
 
 preencherTurmasCadastroEstudante();
-$("#turmaOcorrenciaDiretor").addEventListener("change",atualizarAlunosOcorrenciaDiretor);
+function renderEnvolvidosSelecionadosDiretor(){
+  const coletiva=$("#ocorrenciaColetivaDiretor")?.checked===true;
+  const area=$("#envolvidosSelecionadosDiretor");
+  const lista=$("#listaEnvolvidosSelecionadosDiretor");
+  const botao=$("#adicionarAlunoColetivaDiretor");
+  if(botao) botao.classList.toggle("hidden",!coletiva);
+  if(!area||!lista)return;
+  area.classList.toggle("hidden",!coletiva);
+  const envolvidos=[...envolvidosSelecionadosDiretor].map(id=>estudantes.find(a=>a.id===id)).filter(Boolean);
+  lista.innerHTML=envolvidos.length ? envolvidos.map(a=>`<span class="badge em-analise" style="display:inline-flex;align-items:center;gap:6px">${esc(a.nome)} — ${esc(a.turma||"")} <button type="button" class="remover-envolvido-diretor" data-id="${esc(a.id)}" style="border:0;background:transparent;cursor:pointer;font-weight:900" title="Remover">×</button></span>`).join("") : '<span class="busca-status">Nenhum estudante adicionado ainda.</span>';
+  lista.querySelectorAll(".remover-envolvido-diretor").forEach(btn=>btn.addEventListener("click",()=>{ envolvidosSelecionadosDiretor.delete(btn.dataset.id); renderEnvolvidosSelecionadosDiretor(); }));
+}
+
+$("#turmaOcorrenciaDiretor").addEventListener("change",()=>{
+  // Em ocorrência coletiva, preserva os estudantes já adicionados ao trocar de turma.
+  // Se houver um aluno selecionado antes da troca, confirma esse aluno automaticamente.
+  if($("#ocorrenciaColetivaDiretor").checked){
+    const alunoAnterior=$("#alunoOcorrenciaDiretor").value;
+    if(alunoAnterior) envolvidosSelecionadosDiretor.add(alunoAnterior);
+  }else{
+    envolvidosSelecionadosDiretor.clear();
+  }
+  atualizarAlunosOcorrenciaDiretor();
+  renderEnvolvidosSelecionadosDiretor();
+});
+$("#adicionarAlunoColetivaDiretor").addEventListener("click",()=>{
+  const select=$("#alunoOcorrenciaDiretor");
+  const id=select.value;
+  if(!id){toast("Selecione um estudante antes de adicionar outro.");return;}
+  const aluno=estudantes.find(a=>a.id===id);
+  envolvidosSelecionadosDiretor.add(id);
+  renderEnvolvidosSelecionadosDiretor();
+  select.value="";
+  if(aluno) toast(`${aluno.nome} foi adicionado à ocorrência coletiva. Você pode trocar de turma e escolher o próximo estudante.`);
+});
+$("#ocorrenciaColetivaDiretor").addEventListener("change",()=>{
+  if($("#ocorrenciaColetivaDiretor").checked){
+    const atual=$("#alunoOcorrenciaDiretor").value;
+    if(atual) envolvidosSelecionadosDiretor.add(atual);
+  }else{
+    const primeiro=[...envolvidosSelecionadosDiretor][0]||$("#alunoOcorrenciaDiretor").value;
+    envolvidosSelecionadosDiretor.clear();
+    if(primeiro) $("#alunoOcorrenciaDiretor").value=primeiro;
+  }
+  renderEnvolvidosSelecionadosDiretor();
+});
 
 $("#alternarFormularioOcorrenciaDiretor").addEventListener("click",()=>{
   const area=$("#areaFormularioOcorrenciaDiretor");
@@ -1053,9 +1271,16 @@ $("#alternarFormularioOcorrenciaDiretor").addEventListener("click",()=>{
 $("#formOcorrenciaDiretor").addEventListener("submit",async e=>{
   e.preventDefault();
   const turma=$("#turmaOcorrenciaDiretor").value;
-  const aluno=estudantes.find(a=>a.id===$("#alunoOcorrenciaDiretor").value && String(a.turma||"").trim().toUpperCase()===turma);
+  const coletiva=$("#ocorrenciaColetivaDiretor").checked;
+  const idsSelecionados=coletiva ? [...new Set([...envolvidosSelecionadosDiretor, $("#alunoOcorrenciaDiretor").value].filter(Boolean))] : [$("#alunoOcorrenciaDiretor").value].filter(Boolean);
+  const envolvidos=estudantes.filter(a=>idsSelecionados.includes(a.id));
+  const motivos=[...document.querySelectorAll('#tipoOcorrenciaDiretor input[name="motivoOcorrencia"]:checked')].map(el=>el.value);
   if(!turma){toast("Selecione a turma.");return;}
-  if(!aluno){toast("Selecione um estudante da turma escolhida.");return;}
+  if(!envolvidos.length){toast("Selecione pelo menos um estudante.");return;}
+  if(coletiva && envolvidos.length<2){toast("Para ocorrência coletiva, selecione pelo menos dois estudantes.");return;}
+  if(!coletiva && envolvidos.length!==1){toast("Para ocorrência individual, selecione apenas um estudante.");return;}
+  if(!motivos.length){toast("Selecione pelo menos um motivo.");return;}
+  const aluno=envolvidos[0];
 
   const nomeGestor=usuarioAtual?.nome||usuarioAtual?.email||"Direção";
   await addDoc(collection(db,"ocorrencias"),{
@@ -1064,13 +1289,16 @@ $("#formOcorrenciaDiretor").addEventListener("submit",async e=>{
     alunoTurma:aluno.turma||"",
     responsavelNome:aluno.responsavel||"",
     responsavelTelefone:aluno.contato||"",
+    coletiva,
+    envolvidos:envolvidos.map(a=>({id:a.id,nome:a.nome,turma:a.turma||"",responsavelNome:a.responsavel||"",responsavelTelefone:a.contato||""})),
+    motivos,
     professorId:usuarioAtual.uid,
     professorNome:nomeGestor,
     professor:nomeGestor,
     autorId:usuarioAtual.uid,
     autorNome:nomeGestor,
     autorPerfil:"gestor",
-    tipo:$("#tipoOcorrenciaDiretor").value,
+    tipo:motivos.join(" | "),
     descricao:$("#descricaoOcorrenciaDiretor").value.trim(),
     providenciaProfessor:$("#providenciaOcorrenciaDiretor").value.trim(),
     providencia:$("#providenciaOcorrenciaDiretor").value.trim(),
@@ -1082,6 +1310,9 @@ $("#formOcorrenciaDiretor").addEventListener("submit",async e=>{
   });
 
   e.target.reset();
+  $("#ocorrenciaColetivaDiretor").checked=false;
+  envolvidosSelecionadosDiretor.clear();
+  renderEnvolvidosSelecionadosDiretor();
   atualizarTurmasOcorrenciaDiretor();
   $("#alunoOcorrenciaDiretor").disabled=true;
   $("#alunoOcorrenciaDiretor").innerHTML='<option value="">Selecione primeiro a turma...</option>';
@@ -1129,8 +1360,8 @@ $("#limparBuscaEstudante").addEventListener("click",()=>{
 function atualizarOpcoesFiltrosOcorrencia(){
   const alunoAtual=$("#filtroAlunoOcorrencia").value;
   const turmaAtual=$("#filtroSerieOcorrencia").value;
-  const alunos=[...new Set(ocorrencias.map(o=>o.alunoNome).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-  const turmas=[...new Set(ocorrencias.map(o=>o.alunoTurma).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR",{numeric:true}));
+  const alunos=[...new Set(ocorrencias.flatMap(o=>envolvidosOcorrencia(o).map(a=>a.nome)).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const turmas=[...new Set(ocorrencias.flatMap(o=>envolvidosOcorrencia(o).map(a=>a.turma)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR",{numeric:true}));
   $("#filtroAlunoOcorrencia").innerHTML='<option value="">Todos os alunos</option>'+alunos.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
   $("#filtroSerieOcorrencia").innerHTML='<option value="">Todas as turmas</option>'+turmas.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
   $("#filtroAlunoOcorrencia").value=alunos.includes(alunoAtual)?alunoAtual:"";
@@ -1183,7 +1414,7 @@ function render(){
   const termoEstudante=normalizarBusca(filtroEstudante);
   const estudantesVisiveis=estudantes.filter(a=>a.excluido!==true);
   const estudantesExcluidos=estudantes.filter(a=>a.excluido===true);
-  const ocorrenciasVisiveis=ocorrencias.filter(o=>o.excluida!==true);
+  const ocorrenciasVisiveis=[...ocorrencias];
   const ocorrenciasExcluidas=ocorrencias.filter(o=>o.excluida===true);
   atualizarOpcoesFiltrosOcorrencia();
 
@@ -1208,8 +1439,7 @@ function render(){
   });
 
   const ocorrenciasFiltradas=ocorrenciasVisiveis.filter(o=>
-    (!filtroAlunoOcorrencia || o.alunoNome===filtroAlunoOcorrencia) &&
-    (!filtroSerieOcorrencia || o.alunoTurma===filtroSerieOcorrencia) &&
+    ocorrenciaCorrespondeFiltros(o,filtroAlunoOcorrencia,filtroSerieOcorrencia) &&
     (!filtroDataOcorrencia || dataISO(o.criadaEm)===filtroDataOcorrencia)
   );
 
@@ -1232,13 +1462,13 @@ function render(){
   $("#resumoProfessores").textContent=`${professores.length} usuário(s)`;
   $("#statusBuscaEstudante").textContent=(termoEstudante||filtroSerieEstudante) ? `${estudantesFiltrados.length} estudante(s) localizado(s).` : "";
   const filtrosAtivos=[filtroAlunoOcorrencia,filtroSerieOcorrencia,filtroDataOcorrencia].filter(Boolean).length;
-  $("#statusBuscaOcorrencia").textContent=filtrosAtivos ? `${ocorrenciasFiltradas.length} ocorrência(s) encontrada(s) com os filtros selecionados.` : `${ocorrenciasVisiveis.length} ocorrência(s) no total.`;
+  $("#statusBuscaOcorrencia").textContent=filtrosAtivos ? `${ocorrenciasFiltradas.length} ocorrência(s) encontrada(s) com os filtros selecionados. Firebase retornou ${ocorrencias.length} registro(s).` : `${ocorrenciasVisiveis.length} ocorrência(s) recebida(s) do Firebase.`;
   $("#listaPendentes").innerHTML=pend.length ? tabelaOcorrencias(pend,true) : '<div class="vazio">Nenhuma ocorrência pendente.</div>';
   $("#listaFinalizadas").innerHTML=fin.length ? tabelaOcorrencias(fin,false) : '<div class="vazio">Nenhuma ocorrência finalizada.</div>';
   const totalLixeira=estudantesExcluidos.length+ocorrenciasExcluidas.length;
   $("#resumoLixeira").textContent=totalLixeira===1?"1 item":`${totalLixeira} itens`;
   $("#lixeiraEstudantes").innerHTML=estudantesExcluidos.length ? `<div class="tabela-wrap"><table><thead><tr><th>Nome</th><th>Turma</th><th>R.A.</th><th>Ações</th></tr></thead><tbody>${estudantesExcluidos.map(a=>`<tr><td><strong>${esc(a.nome||"")}</strong></td><td>${esc(a.turma||"")}</td><td>${esc(a.ra||"")}-${esc(a.digito||"")}</td><td><div class="acoes"><button class="btn btn-sucesso btn-mini" data-restaurar-aluno="${a.id}">Restaurar</button><button class="btn btn-perigo btn-mini" data-apagar-aluno="${a.id}">Excluir definitivamente</button></div></td></tr>`).join("")}</tbody></table></div>` : '<div class="vazio">Nenhum estudante na lixeira.</div>';
-  $("#lixeiraOcorrencias").innerHTML=ocorrenciasExcluidas.length ? `<div class="tabela-wrap"><table><thead><tr><th>Aluno</th><th>Turma</th><th>Tipo</th><th>Data</th><th>Ações</th></tr></thead><tbody>${ocorrenciasExcluidas.map(o=>`<tr><td><strong>${esc(o.alunoNome||"")}</strong></td><td>${esc(o.alunoTurma||"")}</td><td>${esc(o.tipo||"")}</td><td>${dataBR(o.criadaEm)}</td><td><div class="acoes"><button class="btn btn-sucesso btn-mini" data-restaurar-ocorrencia="${o.id}">Restaurar</button><button class="btn btn-perigo btn-mini" data-apagar-ocorrencia="${o.id}">Excluir definitivamente</button></div></td></tr>`).join("")}</tbody></table></div>` : '<div class="vazio">Nenhuma ocorrência na lixeira.</div>';
+  $("#lixeiraOcorrencias").innerHTML=ocorrenciasExcluidas.length ? `<div class="tabela-wrap"><table><thead><tr><th>Aluno</th><th>Turma</th><th>Motivo(s)</th><th>Data</th><th>Ações</th></tr></thead><tbody>${ocorrenciasExcluidas.map(o=>`<tr><td><strong>${esc(o.alunoNome||"")}</strong></td><td>${esc(o.alunoTurma||"")}</td><td>${esc(motivosTexto(o))}</td><td>${dataBR(o.criadaEm)}</td><td><div class="acoes"><button class="btn btn-sucesso btn-mini" data-restaurar-ocorrencia="${o.id}">Restaurar</button><button class="btn btn-perigo btn-mini" data-apagar-ocorrencia="${o.id}">Excluir definitivamente</button></div></td></tr>`).join("")}</tbody></table></div>` : '<div class="vazio">Nenhuma ocorrência na lixeira.</div>';
   document.querySelectorAll("[data-atender]").forEach(btn=>btn.onclick=()=>abrirOcorrencia(btn.dataset.atender));
   document.querySelectorAll("[data-ver]").forEach(btn=>btn.onclick=()=>verFinalizada(btn.dataset.ver));
   document.querySelectorAll("[data-finalizar-rapido]").forEach(btn=>btn.onclick=()=>abrirParaFinalizar(btn.dataset.finalizarRapido));
@@ -1263,12 +1493,12 @@ function tabelaOcorrencias(lista, pendente){
      const classeCard=o.status==="Em análise"?"em-analise-card":o.status==="Aguardando responsável"?"aguardando-card":"";
      return `<article class="ocorrencia-card ${classeCard}">
        <div class="ocorrencia-card-topo">
-         <div><h3>${esc(o.alunoNome)}</h3><div class="turma">${esc(o.alunoTurma||"Turma não informada")}</div></div>
-         <span class="badge ${classeStatus(o.status)}">${esc(o.status||"Pendente")}</span>
+         <div><h3>${esc(nomesEnvolvidos(o))}</h3><div class="turma">${envolvidosOcorrencia(o).length>1?`Ocorrência coletiva — ${envolvidosOcorrencia(o).length} envolvidos`:esc(o.alunoTurma||"Turma não informada")}</div></div>
+         <span class="badge ${classeStatus(o.status)}">${esc(o.status||"Pendente")}</span>${o.excluida===true?' <span class="badge" style="background:#fff0f1;color:#a62f3d">Na lixeira</span>':""}
        </div>
        <div class="ocorrencia-meta">
          <div><strong>Professor:</strong> ${esc(o.professorNome||o.professor||"Não informado")}</div>
-         <div><strong>Tipo:</strong> ${esc(o.tipo||"Não informado")}</div>
+         <div><strong>Motivo(s):</strong> ${esc(motivosTexto(o)||"Não informado")}</div>
          <div><strong>Registrada em:</strong> ${dataBR(o.criadaEm)}</div>
        </div>
        <div class="acoes">
@@ -1280,10 +1510,10 @@ function tabelaOcorrencias(lista, pendente){
      </article>`;
    }).join("")}</div>`;
  }
- return `<div class="tabela-wrap"><table><thead><tr><th>Aluno</th><th>Professor</th><th>Tipo</th><th>Data</th><th>Status</th><th></th></tr></thead><tbody>${lista.map(o=>`<tr>
- <td><strong>${esc(o.alunoNome)}</strong><br><small>${esc(o.alunoTurma||"")}</small></td>
+ return `<div class="tabela-wrap"><table><thead><tr><th>Aluno</th><th>Professor</th><th>Motivo(s)</th><th>Data</th><th>Status</th><th></th></tr></thead><tbody>${lista.map(o=>`<tr>
+ <td><strong>${esc(nomesEnvolvidos(o))}</strong>${envolvidosOcorrencia(o).length>1?`<br><small>Ocorrência coletiva (${envolvidosOcorrencia(o).length} envolvidos)</small>`:`<br><small>${esc(o.alunoTurma||"")}</small>`}</td>
  <td>${esc(o.professorNome||o.professor||"")}</td><td>${esc(o.tipo||"")}</td><td>${dataBR(o.criadaEm)}</td>
- <td><span class="badge ${classeStatus(o.status)}">${esc(o.status||"Pendente")}</span></td>
+ <td><span class="badge ${classeStatus(o.status)}">${esc(o.status||"Pendente")}</span>${o.excluida===true?' <span class="badge" style="background:#fff0f1;color:#a62f3d">Na lixeira</span>':""}</td>
  <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button><button class="btn btn-secundario" data-pdf="${o.id}">Baixar PDF</button><button class="btn btn-perigo" data-excluir-ocorrencia="${o.id}">Excluir</button></div></td>
  </tr>`).join("")}</tbody></table></div>`;
 }
@@ -1327,12 +1557,12 @@ async function baixarPdfOcorrencia(id){
       <h1 style="font-size:22px;margin:0 0 6px">REGISTRO DE OCORRÊNCIA ESCOLAR</h1>
       <div style="color:#555">E. E. Prof. Dr. Moacyr Miranda Pinto<br>Sistema de Ocorrências Escolares</div>
     </div>
-    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Aluno:</strong>${esc(o.alunoNome)}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Aluno(s):</strong>${esc(nomesEnvolvidos(o))}</div>
     <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Turma:</strong>${esc(o.alunoTurma||"")}</div>
     <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Responsável:</strong>${esc(responsavel.nome)}</div>
     <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Telefone do responsável:</strong>${esc(responsavel.telefone)}</div>
     <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Registrada por:</strong>${esc(o.professorNome||o.professor||"")}</div>
-    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Tipo:</strong>${esc(o.tipo||"")}</div>
+    <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Motivo(s):</strong>${esc(motivosTexto(o))}</div>
     <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Registrada em:</strong>${dataBR(o.criadaEm)}</div>
     <div style="border-bottom:1px solid #bbb;padding:8px 0"><strong style="display:inline-block;min-width:190px">Status:</strong>${esc(o.status||"Pendente")}</div>
     <div style="border:1px solid #bbb;border-radius:8px;padding:13px;margin-top:15px"><strong style="display:block;margin-bottom:7px">Descrição do ocorrido</strong>${esc(o.descricao||"")}</div>
@@ -1396,14 +1626,14 @@ function imprimirOcorrencia(id){
     <body>
       <h1>REGISTRO DE OCORRÊNCIA ESCOLAR</h1>
       <div class="sub">E. E. Prof. Dr. Moacyr Miranda Pinto<br>Sistema de Ocorrências Escolares</div>
-      <div class="linha"><strong>Aluno:</strong>${esc(o.alunoNome)}</div>
+      <div class="linha"><strong>Aluno(s):</strong>${esc(nomesEnvolvidos(o))}</div>
       <div class="linha"><strong>Turma:</strong>${esc(o.alunoTurma||"")}</div>
       <div class="linha"><strong>Responsável:</strong>${esc(responsavel.nome)}</div>
       <div class="linha"><strong>Telefone do responsável:</strong>${esc(responsavel.telefone)}</div>
       <div class="linha"><strong>Professor:</strong>${esc(o.professorNome||o.professor||"")}</div>
-      <div class="linha"><strong>Tipo:</strong>${esc(o.tipo||"")}</div>
+      <div class="linha"><strong>Motivo(s):</strong>${esc(motivosTexto(o))}</div>
       <div class="linha"><strong>Registrada em:</strong>${dataBR(o.criadaEm)}</div>
-      <div class="linha"><strong>Status:</strong><span class="status">${esc(o.status||"Pendente")}</span></div>
+      <div class="linha"><strong>Status:</strong><span class="status">${esc(o.status||"Pendente")}</span>${o.excluida===true?' <span class="badge" style="background:#fff0f1;color:#a62f3d">Na lixeira</span>':""}</div>
       <div class="bloco"><strong>Descrição do ocorrido</strong>${esc(o.descricao||"")}</div>
       <div class="bloco"><strong>Providência inicial do professor</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
       ${o.providenciaDirecao?`<div class="bloco"><strong>Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}
@@ -1425,11 +1655,11 @@ function imprimirOcorrencia(id){
 function detalhes(o, finalizada=false){
  const responsavel=dadosResponsavelDaOcorrencia(o);
  return `
- <div class="detalhe"><strong>Aluno</strong>${esc(o.alunoNome)} — ${esc(o.alunoTurma||"")}</div>
+ ${resumoEnvolvidosHtml(o)}
  <div class="detalhe"><strong>Responsável</strong>${esc(responsavel.nome)}</div>
  <div class="detalhe"><strong>Telefone do responsável</strong>${esc(responsavel.telefone)}</div>
  <div class="detalhe"><strong>Professor</strong>${esc(o.professorNome||o.professor||"")}</div>
- <div class="detalhe"><strong>Tipo</strong>${esc(o.tipo||"")}</div>
+ <div class="detalhe"><strong>Motivo(s)</strong>${esc(motivosTexto(o))}</div>
  <div class="detalhe"><strong>Descrição</strong>${esc(o.descricao||"")}</div>
  <div class="detalhe"><strong>Providência inicial do professor</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
  <div class="detalhe"><strong>Status</strong>${esc(o.status||"Pendente")}</div>
@@ -1564,6 +1794,56 @@ $("#alternarLixeira").addEventListener("click",()=>{
   $("#alternarLixeira").textContent=estaOculta?"Mostrar lixeira":"Ocultar lixeira";
   $("#alternarLixeira").setAttribute("aria-expanded",String(!estaOculta));
 });
+
+
+// ===== Navegação do novo menu inicial do diretor =====
+const secoesDiretor = [
+  "secaoPendentes","secaoUsuarios","secaoEstudantes","secaoNovaOcorrencia",
+  "secaoFiltros","secaoFinalizadas","secaoLixeira"
+];
+const titulosDiretor = {
+  ocorrencias:"Ocorrências",
+  usuarios:"Cadastrar usuário",
+  estudantes:"Cadastrar estudantes / Estudantes cadastrados",
+  nova:"Nova ocorrência",
+  finalizadas:"Ocorrências finalizadas"
+};
+function ocultarSecoesDiretor(){
+  secoesDiretor.forEach(id=>document.getElementById(id)?.classList.add("secao-diretor-oculta"));
+}
+function abrirViewDiretor(view){
+  if(view==="ocorrencias") pararAlertaCompleto();
+  ocultarSecoesDiretor();
+  document.getElementById("menuInicialDiretor")?.classList.add("hidden");
+  document.getElementById("barraNavegacaoInterna")?.classList.remove("hidden");
+  const titulo=document.getElementById("tituloSecaoDiretor");
+  if(titulo) titulo.textContent=titulosDiretor[view]||"";
+
+  const mostrar=(id)=>document.getElementById(id)?.classList.remove("secao-diretor-oculta");
+  if(view==="ocorrencias"){ mostrar("secaoPendentes"); mostrar("secaoFiltros"); }
+  if(view==="usuarios") mostrar("secaoUsuarios");
+  if(view==="estudantes") mostrar("secaoEstudantes");
+  if(view==="nova"){
+    mostrar("secaoNovaOcorrencia");
+    const area=document.getElementById("areaFormularioOcorrenciaDiretor");
+    if(area) area.classList.remove("hidden");
+    const botao=document.getElementById("alternarFormularioOcorrenciaDiretor");
+    if(botao){ botao.textContent="Recolher formulário"; botao.setAttribute("aria-expanded","true"); }
+  }
+  if(view==="finalizadas"){ mostrar("secaoFiltros"); mostrar("secaoFinalizadas"); mostrar("secaoLixeira"); }
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function voltarInicioDiretor(){
+  ocultarSecoesDiretor();
+  document.getElementById("menuInicialDiretor")?.classList.remove("hidden");
+  document.getElementById("barraNavegacaoInterna")?.classList.add("hidden");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll("#menuInicialDiretor .menu-card").forEach(btn=>{
+  btn.addEventListener("click",()=>abrirViewDiretor(btn.dataset.view));
+});
+document.getElementById("alertaNovaOcorrencia")?.addEventListener("click",()=>abrirViewDiretor("ocorrencias"));
+document.getElementById("voltarInicioDiretor")?.addEventListener("click",voltarInicioDiretor);
 </script>
 </body>
 </html>
