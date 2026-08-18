@@ -219,6 +219,41 @@ body.alerta-ocorrencia-ativo #listaPendentes .ocorrencia-card:first-child{animat
   .menu-diretor .menu-card{height:190px;min-height:190px}
 }
 
+
+
+/* ===== AJUSTE APENAS VISUAL — PADRÃO ANTÔNIO FRANCISCO ===== */
+/* Mantém todas as funcionalidades; altera somente organização e dimensões do menu inicial. */
+@media (min-width: 1250px){
+  #menuInicialDiretor.menu-diretor{
+    grid-template-columns:repeat(5, 232px) !important;
+    gap:24px !important;
+    justify-content:center !important;
+    align-items:stretch !important;
+    max-width:none !important;
+    width:100% !important;
+    margin:42px auto 30px !important;
+  }
+  #menuInicialDiretor .menu-card{
+    width:232px !important;
+    height:322px !important;
+    min-height:322px !important;
+    margin:0 !important;
+    padding:30px 18px !important;
+    font-size:22px !important;
+    border-radius:22px !important;
+  }
+  #menuInicialDiretor .menu-card:nth-child(4),
+  #menuInicialDiretor .menu-card:nth-child(5){
+    grid-column:auto !important;
+    margin-left:0 !important;
+  }
+  #menuInicialDiretor .menu-icone{
+    width:102px !important;
+    height:102px !important;
+    font-size:48px !important;
+  }
+  #menuInicialDiretor .menu-seta{font-size:38px !important;}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>

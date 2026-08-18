@@ -113,6 +113,33 @@ textarea{min-height:105px;resize:vertical}
 @media(max-width:900px){.prof-stats{grid-template-columns:1fr 1fr}.prof-menu-grid{grid-template-columns:1fr 1fr;max-width:700px}.prof-menu-card{height:210px}}
 @media(max-width:620px){.prof-stats{grid-template-columns:1fr}.prof-menu-grid{grid-template-columns:1fr;gap:16px}.prof-menu-card{height:176px}.prof-secao-topo{align-items:flex-start;flex-direction:column}.prof-stat{min-height:90px}}
 
+
+
+/* ===== AJUSTE APENAS VISUAL — PADRÃO ANTÔNIO FRANCISCO ===== */
+/* Mantém todas as funcionalidades; altera somente organização e dimensões dos atalhos. */
+@media (min-width: 1250px){
+  .prof-menu-grid{
+    grid-template-columns:repeat(3, 232px) !important;
+    gap:24px !important;
+    justify-content:center !important;
+    align-items:stretch !important;
+    max-width:none !important;
+    width:100% !important;
+    margin:42px auto 30px !important;
+  }
+  .prof-menu-card{
+    width:232px !important;
+    height:322px !important;
+    min-height:322px !important;
+    margin:0 !important;
+    padding:30px 18px !important;
+    font-size:22px !important;
+    border-radius:22px !important;
+  }
+  .prof-menu-icon{width:102px !important;height:102px !important;}
+  .prof-menu-icon svg{width:48px !important;height:48px !important;}
+  .prof-menu-arrow{font-size:38px !important;}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
