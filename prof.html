@@ -140,6 +140,40 @@ textarea{min-height:105px;resize:vertical}
   .prof-menu-icon svg{width:48px !important;height:48px !important;}
   .prof-menu-arrow{font-size:38px !important;}
 }
+
+/* ===== ANEXO DE IMAGEM DA OCORRÊNCIA ===== */
+.anexo-imagem-box{border:1px dashed #b8c7da;border-radius:12px;padding:13px;background:#f8fbff}
+.anexo-imagem-box input[type="file"]{background:#fff}
+.anexo-imagem-ajuda{display:block;margin-top:7px;font-size:12px;color:var(--muted);line-height:1.45}
+.anexo-imagem-detalhe img{display:block;max-width:100%;max-height:460px;object-fit:contain;border-radius:12px;border:1px solid var(--borda);margin-top:9px;background:#fff}
+.anexo-imagem-detalhe a{display:inline-block;margin-top:8px;color:var(--azul);font-weight:800;text-decoration:none}
+
+
+/* ===== CLASSIFICAÇÃO ASSISTIDA POR NÍVEL ===== */
+.classificacao-box{border:1px solid #cfd9e6;border-radius:14px;padding:16px;background:#fbfdff}
+.classificacao-box>label:first-child{font-size:14px;color:#19365e}
+.classificacao-perguntas{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.classificacao-opcao{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid #e1e8f2;border-radius:11px;background:#fff;font-size:13px;font-weight:700;color:#33465e;cursor:pointer;line-height:1.4}
+.classificacao-opcao input{width:auto;margin-top:2px;flex:0 0 auto}
+.classificacao-resultado{margin-top:12px;padding:12px 14px;border-radius:11px;background:#eef3f9;color:#40536b;font-size:13px;line-height:1.45}
+.classificacao-resultado strong{font-size:14px}
+.nivel-badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:900;white-space:nowrap}
+.nivel-1{background:#e6f7ef;color:#126842}.nivel-2{background:#fff4d8;color:#8b5c00}.nivel-3{background:#fff0df;color:#9a4f00}.nivel-4{background:#fff0f1;color:#a62f3d}.nivel-0{background:#edf1f6;color:#5f6d7e}
+@media(max-width:700px){.classificacao-perguntas{grid-template-columns:1fr}}
+
+
+/* ===== CLASSIFICAÇÃO OBRIGATÓRIA — NÍVEL AUTOMÁTICO ===== */
+.classificacao-box>label:first-child::after{content:" *";color:#d11;font-weight:900}
+.classificacao-opcao{position:relative;padding-right:94px;min-height:68px;align-items:center}
+.classificacao-opcao .nivel-auto{position:absolute;right:12px;top:50%;transform:translateY(-50%);border-radius:999px;padding:6px 10px;font-size:11px;font-weight:900;white-space:nowrap}
+.classificacao-opcao.nivel1 .nivel-auto{background:#dff5e9;color:#126842}
+.classificacao-opcao.nivel2 .nivel-auto{background:#fff1bd;color:#8b6500}
+.classificacao-opcao.nivel3 .nivel-auto{background:#ffe2cf;color:#a74900}
+.classificacao-opcao.nivel4 .nivel-auto{background:#ffd8dc;color:#b4232f}
+.classificacao-opcao.selecionada{border-width:2px;box-shadow:0 0 0 3px rgba(33,87,213,.08)}
+.classificacao-aviso-obrigatorio{margin-top:10px;font-size:12px;font-weight:800;color:#7a4b00;background:#fff7dc;border:1px solid #f1dfa2;border-radius:10px;padding:9px 11px}
+@media(max-width:620px){.classificacao-opcao{padding-right:12px;padding-bottom:42px}.classificacao-opcao .nivel-auto{top:auto;bottom:9px;left:38px;right:auto;transform:none}}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -239,9 +273,21 @@ textarea{min-height:105px;resize:vertical}
               </div>
               <small class="busca-status">Marque uma ou mais opções.</small>
             </div>
-            <div class="campo full"><label>Descrição do ocorrido</label><textarea id="descricao" required placeholder="Relate objetivamente o que aconteceu."></textarea></div>
+            
+<div class="campo full classificacao-box">
+  <label>Classificação da ocorrência</label>
+  <small class="busca-status">Marque a situação que melhor descreve o ocorrido. Se mais de uma se aplicar, o SOE define automaticamente o nível mais alto.</small>
+  <div class="classificacao-perguntas">
+    <label class="classificacao-opcao nivel1"><input id="classLeve" type="checkbox"> Ocorrência leve e pontual, sem dano ou risco significativo.<span class="nivel-auto">NÍVEL 1</span></label>
+    <label class="classificacao-opcao nivel3"><input id="classGrave" type="checkbox"> Agressão, ameaça, bullying/cyberbullying ou dano relevante.<span class="nivel-auto">NÍVEL 3</span></label>
+    <label class="classificacao-opcao nivel2"><input id="classModerada" type="checkbox"> Reincidência, desrespeito, conflito ou descumprimento de regras com impacto pedagógico.<span class="nivel-auto">NÍVEL 2</span></label>
+    <label class="classificacao-opcao nivel4"><input id="classRisco" type="checkbox"> Situação grave com risco à integridade física/psicológica ou possível violação de direitos.<span class="nivel-auto">NÍVEL 4</span></label>
+  </div>
+  <div class="classificacao-aviso-obrigatorio">Preenchimento obrigatório. O nível é definido automaticamente a partir da opção marcada.</div>
+</div>
+<div class="campo full"><label>Descrição do ocorrido</label><textarea id="descricao" required placeholder="Relate objetivamente o que aconteceu."></textarea></div>
             <div class="campo full"><label>Providência inicial tomada pelo professor</label><textarea id="providenciaProfessor" required placeholder="Ex.: orientação ao aluno, mudança de lugar, conversa individual..."></textarea></div>
-            <button class="btn btn-primario campo full" type="submit">Registrar e enviar à direção</button>
+<button class="btn btn-primario campo full" id="btnRegistrarOcorrencia" type="submit">Registrar e enviar à direção</button>
           </form>
         </div>
       </section>
@@ -261,6 +307,7 @@ textarea{min-height:105px;resize:vertical}
           <div class="campo"><label>Aluno</label><select id="filtroAlunoOcorrencia"><option value="">Todos os alunos</option></select></div>
           <div class="campo"><label>Série / turma</label><select id="filtroSerieOcorrencia"><option value="">Todas as séries</option></select></div>
           <div class="campo"><label>Data</label><input id="filtroDataOcorrencia" type="date"></div>
+<div class="campo"><label>Nível</label><select id="filtroNivelOcorrencia"><option value="">Todos os níveis</option><option value="1">Nível 1</option><option value="2">Nível 2</option><option value="3">Nível 3</option><option value="4">Nível 4</option><option value="0">Sem classificação</option></select></div>
           <button id="limparFiltrosOcorrencia" type="button" class="btn btn-secundario">Limpar filtros</button>
         </div>
         <div id="statusBuscaOcorrencia" class="busca-status" style="margin-top:10px"></div>
@@ -330,6 +377,7 @@ let filtroEstudante="";
 let filtroAlunoOcorrencia="";
 let filtroSerieOcorrencia="";
 let filtroDataOcorrencia="";
+let filtroNivelOcorrencia="";
 let modoOcorrencias="minhas";
 let ocorrenciaEmEdicao=null;
 let envolvidosSelecionadosOcorrencia=new Set();
@@ -372,6 +420,73 @@ function normalizarBusca(valor=""){
  return String(valor).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
 }
 function esc(v=""){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+
+
+
+// ===== Classificação assistida por nível =====
+const NIVEIS_OCORRENCIA={
+  1:{nome:"Nível 1 — Leve",encaminhamento:"Orientação educativa; diálogo; registro; acompanhamento pelo professor."},
+  2:{nome:"Nível 2 — Moderada",encaminhamento:"Registro formal; intervenção da gestão; contato com família; plano de acompanhamento."},
+  3:{nome:"Nível 3 — Grave",encaminhamento:"Proteção dos envolvidos; registro detalhado; convocação da família; encaminhamentos conforme necessidade e normas da rede."},
+  4:{nome:"Nível 4 — Crítica",encaminhamento:"Ação imediata de proteção; gestão; família; preservação de evidências; acionamento dos órgãos/serviços competentes conforme legislação e protocolos da rede."}
+};
+function numeroNivelOcorrencia(o){const n=Number(o?.nivelOcorrencia||o?.nivel||0);return [1,2,3,4].includes(n)?n:0;}
+function nomeNivelOcorrencia(n){return NIVEIS_OCORRENCIA[Number(n)]?.nome||"Sem classificação";}
+function encaminhamentoNivel(n){return NIVEIS_OCORRENCIA[Number(n)]?.encaminhamento||"";}
+function badgeNivelOcorrencia(o){const n=numeroNivelOcorrencia(o);return `<span class="nivel-badge nivel-${n}">${n?`NÍVEL ${n}`:"SEM NÍVEL"}</span>`;}
+function calcularNivelSugerido(sufixo=""){
+  const risco=document.getElementById("classRisco"+sufixo)?.checked;
+  const grave=document.getElementById("classGrave"+sufixo)?.checked;
+  const moderada=document.getElementById("classModerada"+sufixo)?.checked;
+  const leve=document.getElementById("classLeve"+sufixo)?.checked;
+  if(risco)return 4;if(grave)return 3;if(moderada)return 2;if(leve)return 1;return 0;
+}
+function atualizarClassificacaoAssistida(sufixo=""){
+  ["classRisco","classGrave","classModerada","classLeve"].forEach(id=>{
+    const el=document.getElementById(id+sufixo);
+    if(el) el.closest(".classificacao-opcao")?.classList.toggle("selecionada",!!el.checked);
+  });
+}
+function dadosClassificacaoAssistida(sufixo=""){
+  const nivel=calcularNivelSugerido(sufixo);
+  return {
+    nivelOcorrencia:nivel,
+    nivelSugerido:nivel,
+    classificacaoAssistida:{
+      riscoIntegridade:!!document.getElementById("classRisco"+sufixo)?.checked,
+      agressaoAmeacaBullyingDano:!!document.getElementById("classGrave"+sufixo)?.checked,
+      reincidenciaConflitoImpacto:!!document.getElementById("classModerada"+sufixo)?.checked,
+      levePontual:!!document.getElementById("classLeve"+sufixo)?.checked
+    }
+  };
+}
+function restaurarClassificacaoAssistida(o,sufixo=""){
+  const c=o?.classificacaoAssistida||{};
+  const n=numeroNivelOcorrencia(o);
+  const temMarcacao=!!(c.riscoIntegridade||c.agressaoAmeacaBullyingDano||c.reincidenciaConflitoImpacto||c.levePontual);
+  const valores=temMarcacao ? {
+    classRisco:!!c.riscoIntegridade,
+    classGrave:!!c.agressaoAmeacaBullyingDano,
+    classModerada:!!c.reincidenciaConflitoImpacto,
+    classLeve:!!c.levePontual
+  } : {
+    classRisco:n===4,
+    classGrave:n===3,
+    classModerada:n===2,
+    classLeve:n===1
+  };
+  Object.entries(valores).forEach(([id,valor])=>{const el=document.getElementById(id+sufixo);if(el)el.checked=valor;});
+  atualizarClassificacaoAssistida(sufixo);
+}
+function vincularClassificacaoAssistida(sufixo=""){
+  ["classRisco","classGrave","classModerada","classLeve"].forEach(id=>document.getElementById(id+sufixo)?.addEventListener("change",()=>atualizarClassificacaoAssistida(sufixo)));
+}
+
+
+function htmlImagemOcorrencia(o){
+  if(!o?.imagemUrl) return "";
+  return `<div class="detalhe anexo-imagem-detalhe"><strong>Imagem anexada</strong><img src="${esc(o.imagemUrl)}" alt="Imagem anexada à ocorrência" loading="lazy"><a href="${esc(o.imagemUrl)}" target="_blank" rel="noopener noreferrer">Abrir imagem em tamanho real</a>${o.imagemNome?`<div class="busca-status" style="margin-top:6px">${esc(o.imagemNome)}</div>`:""}</div>`;
+}
 function dataBR(v){if(!v)return"-";const d=v.toDate?v.toDate():new Date(v);return d.toLocaleString("pt-BR");}
 function toast(msg){$("#toast").textContent=msg;$("#toast").classList.remove("hidden");setTimeout(()=>$("#toast").classList.add("hidden"),3000);}
 async function carregarPerfil(uid){const s=await getDoc(doc(db,"usuariosSistema",uid));return s.exists()?s.data():null;}
@@ -462,6 +577,8 @@ function iniciarTempoReal(){
  });
 }
 
+vincularClassificacaoAssistida("");
+
 $("#formOcorrencia").addEventListener("submit",async e=>{
  e.preventDefault();
  const sala=$("#turmaOcorrencia").value;
@@ -474,6 +591,8 @@ $("#formOcorrencia").addEventListener("submit",async e=>{
  if(coletiva && envolvidos.length<2){toast("Para uma ocorrência coletiva, selecione pelo menos dois estudantes.");return;}
  if(!coletiva && envolvidos.length!==1){toast("Para ocorrência individual, selecione apenas um estudante.");return;}
  if(!motivos.length){toast("Selecione pelo menos um motivo.");return;}
+ const dadosNivel=dadosClassificacaoAssistida("");
+ if(!dadosNivel.nivelOcorrencia){toast("Selecione a classificação da ocorrência antes de registrar.");return;}
  const aluno=envolvidos[0];
  const dadosFormulario={
    alunoId:aluno.id,alunoNome:aluno.nome,alunoTurma:aluno.turma||"",
@@ -482,9 +601,13 @@ $("#formOcorrencia").addEventListener("submit",async e=>{
    envolvidos:envolvidos.map(a=>({id:a.id,nome:a.nome,turma:a.turma||"",responsavelNome:a.responsavel||"",responsavelTelefone:a.contato||""})),
    motivos, tipo:motivos.join(" | "),descricao:$("#descricao").value.trim(),
    providenciaProfessor:$("#providenciaProfessor").value.trim(),
-   providencia:$("#providenciaProfessor").value.trim()
+   providencia:$("#providenciaProfessor").value.trim(),
+   ...dadosNivel
  };
+ const botao=$("#btnRegistrarOcorrencia");
+ const textoOriginal=botao.textContent;
  try{
+   botao.disabled=true; botao.textContent="Salvando...";
    if(ocorrenciaEmEdicao){
      const atual=ocorrencias.find(o=>o.id===ocorrenciaEmEdicao);
      if(!atual || atual.professorId!==usuarioAtual.uid || atual.abertaPelaDirecao===true){
@@ -519,9 +642,10 @@ $("#formOcorrencia").addEventListener("submit",async e=>{
  }catch(erro){
    console.error("Erro ao salvar ocorrência:",erro);
    toast("Não foi possível salvar: "+(erro.code||erro.message));
+ }finally{
+   botao.disabled=false; botao.textContent=textoOriginal;
  }
 });
-
 
 function atualizarSalasOcorrencia(){
  const salaAtual=$("#turmaOcorrencia").value;
@@ -705,14 +829,16 @@ function aplicarFiltrosOcorrencia(){
  filtroAlunoOcorrencia=$("#filtroAlunoOcorrencia").value;
  filtroSerieOcorrencia=$("#filtroSerieOcorrencia").value;
  filtroDataOcorrencia=$("#filtroDataOcorrencia").value;
+ filtroNivelOcorrencia=$("#filtroNivelOcorrencia")?.value||"";
  render();
 }
-["#filtroAlunoOcorrencia","#filtroSerieOcorrencia","#filtroDataOcorrencia"].forEach(id=>$(id).addEventListener("change",aplicarFiltrosOcorrencia));
+["#filtroAlunoOcorrencia","#filtroSerieOcorrencia","#filtroDataOcorrencia","#filtroNivelOcorrencia"].forEach(id=>$(id).addEventListener("change",aplicarFiltrosOcorrencia));
 $("#limparFiltrosOcorrencia").addEventListener("click",()=>{
  $("#filtroAlunoOcorrencia").value="";
  $("#filtroSerieOcorrencia").value="";
  $("#filtroDataOcorrencia").value="";
- filtroAlunoOcorrencia=filtroSerieOcorrencia=filtroDataOcorrencia="";
+ if($("#filtroNivelOcorrencia")) $("#filtroNivelOcorrencia").value="";
+ filtroAlunoOcorrencia=filtroSerieOcorrencia=filtroDataOcorrencia=filtroNivelOcorrencia="";
  render();
 });
 function dataISO(v){
@@ -754,7 +880,8 @@ function render(){
  const baseOcorrencias=modoOcorrencias==="minhas" ? minhasOcorrencias : ocorrencias;
  const ocorrenciasFiltradas=baseOcorrencias.filter(o=>
    ocorrenciaCorrespondeFiltros(o,filtroAlunoOcorrencia,filtroSerieOcorrencia) &&
-   (!filtroDataOcorrencia || dataISO(o.criadaEm)===filtroDataOcorrencia)
+   (!filtroDataOcorrencia || dataISO(o.criadaEm)===filtroDataOcorrencia) &&
+   (!filtroNivelOcorrencia || String(numeroNivelOcorrencia(o))===filtroNivelOcorrencia)
  );
  const pendMinhas=minhasOcorrencias.filter(o=>o.status!=="Finalizada"),finMinhas=minhasOcorrencias.filter(o=>o.status==="Finalizada");
  $("#qtdTotal").textContent=minhasOcorrencias.length;$("#qtdPendentes").textContent=pendMinhas.length;
@@ -764,9 +891,9 @@ function render(){
  <td><strong>${esc(nomesEnvolvidos(o))}</strong>${envolvidosOcorrencia(o).length>1?`<br><small>Ocorrência coletiva (${envolvidosOcorrencia(o).length} envolvidos)</small>`:`<br><small>${esc(o.alunoTurma||"")}</small>`}</td>
  <td>${esc(o.professorNome||o.professor||"Não informado")}</td>
  <td>${esc(motivosTexto(o))}</td><td>${dataBR(o.criadaEm)}</td>
- <td><span class="badge ${classeStatus(o.status)}">${esc(o.status||"Pendente")}</span></td>
+ <td>${badgeNivelOcorrencia(o)}<br><span class="badge ${classeStatus(o.status)}" style="margin-top:5px">${esc(o.status||"Pendente")}</span></td>
  <td><div class="acoes"><button class="btn btn-secundario" data-ver="${o.id}">Ver detalhes</button><button class="btn btn-secundario" data-imprimir="${o.id}">Imprimir</button><button class="btn btn-secundario" data-pdf="${o.id}">Baixar PDF</button>${modoOcorrencias==="minhas" && o.professorId===usuarioAtual?.uid && o.abertaPelaDirecao!==true ? `<button class="btn btn-secundario" data-editar="${o.id}">Editar</button><button class="btn btn-perigo" data-excluir="${o.id}">Excluir</button>` : ""}</div></td></tr>`).join("")}</tbody></table></div>`:(modoOcorrencias==="aluno"&&!filtroAlunoOcorrencia?'<div class="vazio">Selecione um aluno acima para visualizar o histórico completo.</div>':'<div class="vazio">Nenhuma ocorrência encontrada.</div>');
- const filtrosAtivos=[filtroAlunoOcorrencia,filtroSerieOcorrencia,filtroDataOcorrencia].filter(Boolean).length;
+ const filtrosAtivos=[filtroAlunoOcorrencia,filtroSerieOcorrencia,filtroDataOcorrencia,filtroNivelOcorrencia].filter(Boolean).length;
  if(modoOcorrencias==="minhas"){
    $("#statusBuscaOcorrencia").textContent=filtrosAtivos ? `${ocorrenciasFiltradas.length} ocorrência(s) sua(s) encontrada(s).` : `${minhasOcorrencias.length} ocorrência(s) registrada(s) por você.`;
  }else if(!filtroAlunoOcorrencia){
@@ -801,6 +928,7 @@ function editarOcorrencia(id){
  [...document.querySelectorAll('#tipo input[name="motivoOcorrencia"]')].forEach(el=>el.checked=motivos.has(el.value));
  $("#descricao").value=o.descricao||"";
  $("#providenciaProfessor").value=o.providenciaProfessor||o.providencia||"";
+ restaurarClassificacaoAssistida(o,"");
  $("#areaFormularioOcorrencia").scrollIntoView({behavior:"smooth",block:"start"});
  toast("Edite os dados e clique em salvar.");
 }
@@ -969,7 +1097,9 @@ function abrir(id){
  <div class="detalhe"><strong>Responsável</strong>${esc(responsavel.nome)}</div>
  <div class="detalhe"><strong>Telefone do responsável</strong>${esc(responsavel.telefone)}</div>
  <div class="detalhe"><strong>Motivo(s)</strong>${esc(motivosTexto(o))}</div>
+ <div class="detalhe"><strong>Classificação</strong>${badgeNivelOcorrencia(o)}${numeroNivelOcorrencia(o)?`<div class="busca-status" style="margin-top:7px">${esc(encaminhamentoNivel(numeroNivelOcorrencia(o)))}</div>`:""}</div>
  <div class="detalhe"><strong>Descrição</strong>${esc(o.descricao||"")}</div>
+ ${htmlImagemOcorrencia(o)}
  <div class="detalhe"><strong>Sua providência inicial</strong>${esc(o.providenciaProfessor||o.providencia||"")}</div>
  <div class="detalhe"><strong>Status</strong>${esc(o.status||"Pendente")}</div>
  ${o.providenciaDirecao?`<div class="detalhe"><strong>Providência da direção</strong>${esc(formatarProvidenciaDirecao(o))}</div>`:""}

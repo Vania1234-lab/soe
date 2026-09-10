@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SOE — Limpeza segura de ocorrências</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--azul:#2157d5;--bg:#f3f6fb;--card:#fff;--texto:#1d2a3a;--muted:#687587;--borda:#dce4ef;--verde:#16845b;--vermelho:#b4232f;--amarelo:#9a6500}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--texto)}button,input{font:inherit}.hidden{display:none!important}
+.wrap{max-width:980px;margin:0 auto;padding:28px}.card{background:#fff;border:1px solid var(--borda);border-radius:18px;padding:24px;box-shadow:0 12px 34px rgba(32,52,78,.08);margin-bottom:18px}
+h1,h2{margin-top:0}.muted{color:var(--muted);line-height:1.55}.alerta{padding:14px 16px;border-radius:12px;background:#fff4d8;color:#744900;border:1px solid #f1d99b;font-weight:700;line-height:1.5}.perigo{background:#fff0f1;color:#8f2230;border-color:#efc4c9}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}.stat{border:1px solid var(--borda);border-radius:14px;padding:16px}.stat span{display:block;font-size:11px;text-transform:uppercase;font-weight:900;color:var(--muted)}.stat strong{display:block;font-size:29px;margin-top:5px}
+.campo{display:flex;flex-direction:column;gap:7px;margin:14px 0}label{font-size:12px;font-weight:900}input{width:100%;padding:12px;border:1px solid #cfd9e6;border-radius:10px}.btn{border:0;border-radius:10px;padding:12px 16px;font-weight:900;cursor:pointer}.btn:disabled{opacity:.45;cursor:not-allowed}.primario{background:var(--azul);color:#fff}.secundario{background:#eaf0fb;color:#23406b}.sucesso{background:var(--verde);color:#fff}.btn-perigo{background:var(--vermelho);color:#fff}.acoes{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+.progresso{margin-top:14px;height:13px;background:#e8edf4;border-radius:999px;overflow:hidden}.barra{height:100%;width:0;background:var(--azul);transition:width .2s}.log{white-space:pre-wrap;background:#101722;color:#dbe6f5;padding:14px;border-radius:12px;max-height:250px;overflow:auto;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;margin-top:14px}.login{max-width:430px;margin:70px auto}.ok{color:var(--verde);font-weight:900}.erro{color:var(--vermelho);font-weight:800}.top{display:flex;justify-content:space-between;gap:12px;align-items:center}.badge{background:#eaf0fb;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:900}
+@media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.wrap{padding:14px}}@media(max-width:480px){.grid{grid-template-columns:1fr}.acoes{flex-direction:column}.btn{width:100%}}
+</style>
+</head>
+<body>
+<section id="loginArea" class="wrap login">
+  <div class="card">
+    <h1>SOE — Limpeza segura</h1>
+    <p class="muted">Acesso exclusivo do perfil <strong>gestor</strong>. Esta ferramenta não altera estudantes, usuários ou configurações.</p>
+    <form id="formLogin">
+      <div class="campo"><label>E-mail</label><input id="email" type="email" required autocomplete="username"></div>
+      <div class="campo"><label>Senha</label><input id="senha" type="password" required autocomplete="current-password"></div>
+      <button class="btn primario" type="submit">Entrar</button>
+      <p id="erroLogin" class="erro hidden"></p>
+    </form>
+  </div>
+</section>
+
+<section id="app" class="wrap hidden">
+  <div class="top">
+    <div><h1 style="margin-bottom:4px">Limpeza de ocorrências</h1><div class="muted" id="usuarioInfo"></div></div>
+    <button id="sair" class="btn secundario">Sair</button>
+  </div>
+
+  <div class="card">
+    <div class="alerta"><strong>Data de corte fixa: 05/08/2026.</strong><br>Serão mantidas todas as ocorrências registradas em 05/08/2026 a partir de 00:00 e todas as posteriores. Somente ocorrências com <code>criadaEm</code> anterior à data de corte serão selecionadas para exclusão.</div>
+    <div class="acoes"><button id="analisar" class="btn primario">1. Analisar banco</button></div>
+    <div id="resumo" class="grid hidden">
+      <div class="stat"><span>Total de ocorrências</span><strong id="total">0</strong></div>
+      <div class="stat"><span>Serão mantidas</span><strong id="manter">0</strong></div>
+      <div class="stat"><span>Antes de 05/08</span><strong id="remover">0</strong></div>
+      <div class="stat"><span>Sem data válida</span><strong id="semData">0</strong></div>
+    </div>
+    <div id="avisoSemData" class="alerta hidden" style="margin-top:14px">Há registros sem <code>criadaEm</code> válido. Por segurança, eles <strong>não serão apagados automaticamente</strong>.</div>
+  </div>
+
+  <div id="etapaBackup" class="card hidden">
+    <h2>2. Backup obrigatório</h2>
+    <p class="muted">Baixe um arquivo JSON com todas as ocorrências selecionadas para remoção. Ele contém os dados completos existentes nos documentos e serve como cópia de segurança antes da exclusão.</p>
+    <button id="backup" class="btn sucesso">Baixar backup das ocorrências antigas</button>
+    <div id="backupStatus" class="muted" style="margin-top:10px"></div>
+  </div>
+
+  <div id="etapaExcluir" class="card hidden">
+    <h2>3. Exclusão definitiva</h2>
+    <div class="alerta perigo"><strong>Atenção:</strong> esta ação apaga definitivamente os documentos anteriores a 05/08/2026 da coleção <code>ocorrencias</code> no Firestore. Ela não usa a lixeira do SOE.</div>
+    <div class="campo"><label>Para liberar o botão, digite exatamente:</label><input id="confirmacao" placeholder="EXCLUIR ANTES DE 05/08/2026" autocomplete="off"></div>
+    <button id="excluir" class="btn btn-perigo" disabled>Excluir ocorrências anteriores a 05/08/2026</button>
+    <div class="progresso hidden" id="progresso"><div class="barra" id="barra"></div></div>
+    <div id="log" class="log hidden"></div>
+  </div>
+
+  <div id="resultado" class="card hidden"></div>
+</section>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFirestore, doc, getDoc, collection, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyCsfa0QzC0Nj4Zq9vG0BOd1rWcpYyWVBnU",authDomain:"sistema-ocorrencia.firebaseapp.com",projectId:"sistema-ocorrencia",storageBucket:"sistema-ocorrencia.firebasestorage.app",messagingSenderId:"728625275484",appId:"1:728625275484:web:572e27749d6e53d308bc99"};
+const appFirebase=initializeApp(firebaseConfig,"limpezaSoeApp");
+const auth=getAuth(appFirebase); const db=getFirestore(appFirebase); setPersistence(auth,browserLocalPersistence).catch(()=>{});
+const $=s=>document.querySelector(s);
+// 05/08/2026 00:00 no fuso local do navegador. Em São Paulo corresponde ao início do dia solicitado.
+const DATA_CORTE=new Date(2026,7,5,0,0,0,0);
+let candidatos=[]; let todos=[]; let backupFeito=false; let exclusaoEmAndamento=false;
+
+function dataJS(v){try{if(!v)return null;if(typeof v.toDate==="function")return v.toDate();const d=new Date(v);return Number.isNaN(d.getTime())?null:d}catch{return null}}
+function serializar(v){if(v==null)return v;if(typeof v.toDate==="function")return {__tipo:"Timestamp",iso:v.toDate().toISOString()};if(Array.isArray(v))return v.map(serializar);if(typeof v==="object"){const o={};for(const [k,val] of Object.entries(v))o[k]=serializar(val);return o}return v}
+function log(msg){const el=$("#log");el.classList.remove("hidden");el.textContent+=(el.textContent?"\n":"")+msg;el.scrollTop=el.scrollHeight}
+function resetAnalise(){candidatos=[];todos=[];backupFeito=false;$("#resumo").classList.add("hidden");$("#etapaBackup").classList.add("hidden");$("#etapaExcluir").classList.add("hidden");$("#resultado").classList.add("hidden");$("#confirmacao").value="";$("#excluir").disabled=true;$("#backupStatus").textContent="";$("#log").textContent="";$("#log").classList.add("hidden")}
+
+async function carregarPerfil(uid){const s=await getDoc(doc(db,"usuariosSistema",uid));return s.exists()?s.data():null}
+$("#formLogin").addEventListener("submit",async e=>{e.preventDefault();$("#erroLogin").classList.add("hidden");try{await signInWithEmailAndPassword(auth,$("#email").value.trim(),$("#senha").value)}catch(err){$("#erroLogin").textContent="Não foi possível entrar: "+(err.code||err.message);$("#erroLogin").classList.remove("hidden")}});
+$("#sair").onclick=()=>signOut(auth);
+onAuthStateChanged(auth,async user=>{if(!user){$("#loginArea").classList.remove("hidden");$("#app").classList.add("hidden");return}try{const p=await carregarPerfil(user.uid);if(!p||p.ativo!==true||p.perfil!=="gestor"){await signOut(auth);$("#erroLogin").textContent="Acesso permitido somente a usuário ativo com perfil gestor.";$("#erroLogin").classList.remove("hidden");return}$("#usuarioInfo").textContent=`${p.nome||"Gestor"} — ${user.email||""}`;$("#loginArea").classList.add("hidden");$("#app").classList.remove("hidden")}catch(err){await signOut(auth);$("#erroLogin").textContent="Erro ao validar o perfil: "+err.message;$("#erroLogin").classList.remove("hidden")}});
+
+$("#analisar").onclick=async()=>{if(exclusaoEmAndamento)return;resetAnalise();$("#analisar").disabled=true;$("#analisar").textContent="Analisando...";try{const snap=await getDocs(collection(db,"ocorrencias"));todos=snap.docs.map(d=>({id:d.id,...d.data()}));const semData=todos.filter(o=>!dataJS(o.criadaEm));candidatos=todos.filter(o=>{const d=dataJS(o.criadaEm);return d&&d<DATA_CORTE});const manter=todos.length-candidatos.length-semData.length;$("#total").textContent=todos.length;$("#remover").textContent=candidatos.length;$("#manter").textContent=manter;$("#semData").textContent=semData.length;$("#resumo").classList.remove("hidden");$("#avisoSemData").classList.toggle("hidden",semData.length===0);if(candidatos.length){$("#etapaBackup").classList.remove("hidden");$("#etapaExcluir").classList.remove("hidden")}else{$("#resultado").innerHTML='<h2 class="ok">Nenhuma ocorrência anterior a 05/08/2026 foi encontrada.</h2><p class="muted">Nenhum documento precisa ser excluído.</p>';$("#resultado").classList.remove("hidden")}}catch(err){alert("Falha ao analisar as ocorrências: "+err.message)}finally{$("#analisar").disabled=false;$("#analisar").textContent="1. Analisar banco"}};
+
+$("#backup").onclick=()=>{if(!candidatos.length)return;const payload={geradoEm:new Date().toISOString(),dataCorte:"2026-08-05T00:00:00 America/Sao_Paulo",quantidade:candidatos.length,colecao:"ocorrencias",documentos:candidatos.map(o=>serializar(o))};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`SOE_backup_ocorrencias_anteriores_05-08-2026_${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);backupFeito=true;$("#backupStatus").innerHTML='<span class="ok">Backup gerado. Guarde esse arquivo antes de continuar.</span>';validarConfirmacao()};
+function validarConfirmacao(){const ok=backupFeito&&$("#confirmacao").value.trim()==="EXCLUIR ANTES DE 05/08/2026"&&!exclusaoEmAndamento;$("#excluir").disabled=!ok}
+$("#confirmacao").addEventListener("input",validarConfirmacao);
+
+$("#excluir").onclick=async()=>{if(!backupFeito||$("#confirmacao").value.trim()!=="EXCLUIR ANTES DE 05/08/2026"||!candidatos.length)return;const conf=confirm(`CONFIRMAÇÃO FINAL\n\nSerão apagadas definitivamente ${candidatos.length} ocorrência(s) registradas antes de 05/08/2026.\n\nAs ocorrências de 05/08/2026 em diante serão preservadas.\n\nDeseja continuar?`);if(!conf)return;exclusaoEmAndamento=true;validarConfirmacao();$("#progresso").classList.remove("hidden");$("#log").textContent="";log(`Iniciando exclusão de ${candidatos.length} documento(s)...`);let excluidas=0;try{const tamanhoLote=400;for(let i=0;i<candidatos.length;i+=tamanhoLote){const lote=candidatos.slice(i,i+tamanhoLote);const batch=writeBatch(db);lote.forEach(o=>batch.delete(doc(db,"ocorrencias",o.id)));await batch.commit();excluidas+=lote.length;const pct=Math.round(excluidas/candidatos.length*100);$("#barra").style.width=pct+"%";log(`Lote concluído: ${excluidas}/${candidatos.length} removidas.`)}log("Verificando resultado no Firebase...");const snapDepois=await getDocs(collection(db,"ocorrencias"));const restantes=snapDepois.docs.map(d=>d.data());const antigasRestantes=restantes.filter(o=>{const d=dataJS(o.criadaEm);return d&&d<DATA_CORTE}).length;const semDataRestantes=restantes.filter(o=>!dataJS(o.criadaEm)).length;if(antigasRestantes===0){$("#resultado").innerHTML=`<h2 class="ok">Limpeza concluída com sucesso.</h2><p><strong>${excluidas}</strong> ocorrência(s) anteriores a 05/08/2026 foram excluídas definitivamente.</p><p><strong>${restantes.length}</strong> ocorrência(s) permanecem na coleção.</p>${semDataRestantes?`<p class="muted">${semDataRestantes} registro(s) sem data válida foram preservados por segurança.</p>`:""}`;log("Verificação concluída: nenhuma ocorrência datada anterior a 05/08/2026 permanece.")}else{$("#resultado").innerHTML=`<h2 class="erro">Limpeza parcial.</h2><p>Ainda existem ${antigasRestantes} ocorrência(s) anteriores à data de corte. Não repita a exclusão sem analisar novamente.</p>`;log(`ATENÇÃO: verificação encontrou ${antigasRestantes} registro(s) antigo(s) restante(s).`)}$("#resultado").classList.remove("hidden");$("#confirmacao").value="";candidatos=[]}catch(err){log("ERRO: "+err.message);$("#resultado").innerHTML=`<h2 class="erro">A exclusão foi interrompida.</h2><p>${String(err.message||err)}</p><p class="muted">Alguns lotes podem já ter sido concluídos. Use novamente <strong>Analisar banco</strong> antes de qualquer nova tentativa.</p>`;$("#resultado").classList.remove("hidden")}finally{exclusaoEmAndamento=false;$("#excluir").disabled=true}};
+</script>
+</body>
+</html>
